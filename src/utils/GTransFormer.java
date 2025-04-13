@@ -1,12 +1,10 @@
 package utils;
 
-import commands.GCommandManager;
 import components.GDrawingPanel;
 import states.GDefaultState;
 import states.GState;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
 
 public class GTransFormer {
     private GState currentState;
@@ -24,7 +22,6 @@ public class GTransFormer {
     }
 
     public void start(Point point) {
-        System.out.println("transformer start");
         currentState.start(point);
     }
 
@@ -33,7 +30,10 @@ public class GTransFormer {
     }
 
     public void finish(Point point) {
-        System.out.println("transformer finish");
         currentState.finish(point);
+    }
+
+    public GState getCurrentState() {
+        return currentState;
     }
 }

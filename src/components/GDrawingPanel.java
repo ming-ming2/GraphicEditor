@@ -1,6 +1,7 @@
 package components;
 
 import shapes.GShape;
+import states.GShapeState;
 import utils.GTransFormer;
 
 import javax.swing.*;
@@ -8,8 +9,6 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +20,6 @@ public class GDrawingPanel extends JPanel implements GComponent {
     private boolean isDrawingPolygon = false;
     private List<GShape> shapes = new ArrayList<>();
     private GShape previewShape;
-
     private BufferedImage bufferedImage;
     private Graphics2D bufferedGraphics;
 
@@ -108,9 +106,19 @@ public class GDrawingPanel extends JPanel implements GComponent {
         return transFormer;
     }
 
-    private class MouseHandler implements MouseListener, MouseMotionListener {
+    public List<GShape> getShapes() {
+        return shapes;
+    }
+
+    private class MouseHandler extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent e) {
+            if (isDrawingPolygon && e.getClickCount() == 2) {
+                // 더블클릭 시 다각형 완성
+                if (transFormer.getCurrentState() instanceof GShapeState) {
+                    ((GShapeState) transFormer.getCurrentState()).completePolygon();
+                }
+            }
         }
 
         @Override
@@ -120,7 +128,9 @@ public class GDrawingPanel extends JPanel implements GComponent {
 
         @Override
         public void mouseDragged(MouseEvent e) {
-            if (!isDrawingPolygon) transFormer.update(new Point(e.getX(), e.getY()));
+            if (!isDrawingPolygon) {
+                transFormer.update(new Point(e.getX(), e.getY()));
+            }
         }
 
         @Override
@@ -130,15 +140,9 @@ public class GDrawingPanel extends JPanel implements GComponent {
 
         @Override
         public void mouseMoved(MouseEvent e) {
-            if (isDrawingPolygon) transFormer.update(new Point(e.getX(), e.getY()));
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
+            if (isDrawingPolygon) {
+                transFormer.update(new Point(e.getX(), e.getY()));
+            }
         }
     }
 }
