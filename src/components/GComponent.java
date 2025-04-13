@@ -1,3 +1,5 @@
+package components;
+
 public interface GComponent {
     void createComponents();
     void setAttributes();

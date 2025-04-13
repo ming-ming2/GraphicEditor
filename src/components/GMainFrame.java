@@ -1,6 +1,11 @@
+package components;
+
+import commands.GCommandManager;
+import commands.GShapeCommand;
+import types.GStateType;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +13,8 @@ public class GMainFrame extends JFrame implements GComponent {
     private GDrawingPanel drawingPanel;
     private GMenuBar menuBar;
     private GToolBar toolBar;
-    private List<GComponent> componets = new ArrayList<GComponent>();
+    private List<GComponent> componets = new ArrayList<>();
+    private GCommandManager commandManager;
 
     public GMainFrame() {
         setAttributes();
@@ -31,7 +37,6 @@ public class GMainFrame extends JFrame implements GComponent {
 
     @Override
     public void setAttributes() {
-        this.setVisible(true);
         this.setTitle("Graphic Editor_V1");
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setSize((int) (dim.width / 2.), dim.height * 2 / 3);
@@ -44,6 +49,7 @@ public class GMainFrame extends JFrame implements GComponent {
         this.setLayout(new BorderLayout());
         this.setJMenuBar(menuBar);
         this.add(toolBar, BorderLayout.NORTH);
+        this.add(drawingPanel, BorderLayout.CENTER);
     }
 
     @Override
@@ -52,6 +58,8 @@ public class GMainFrame extends JFrame implements GComponent {
     }
 
     public void initialize() {
+        this.setVisible(true);
+        commandManager = new GCommandManager();
         for (GComponent component : componets) {
             component.initialize();
         }

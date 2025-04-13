@@ -1,4 +1,6 @@
-package components;
+package components.menu;
+
+import components.GComponent;
 
 import javax.swing.*;
 

@@ -1,6 +1,10 @@
+package components.menu;
+
+import components.GComponent;
+
 import javax.swing.*;
 
-public class GViewMenu extends JMenu implements GComponent{
+public class GViewMenu extends JMenu implements GComponent {
     @Override
     public void createComponents() {
 

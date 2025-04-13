@@ -1,3 +1,7 @@
+package components.menu;
+
+import components.GComponent;
+
 import javax.swing.*;
 
 public class GEditMenu extends JMenu implements GComponent {

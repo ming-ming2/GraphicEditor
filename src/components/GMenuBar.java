@@ -1,9 +1,16 @@
+package components;
+
+import components.menu.GEditMenu;
+import components.menu.GFileMenu;
+import components.menu.GGraphicMenu;
+import components.menu.GViewMenu;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GMenuBar extends JMenuBar implements GComponent{
+public class GMenuBar extends JMenuBar implements GComponent {
     private GFileMenu fileMenu;
     private GEditMenu editMenu;
     private GViewMenu viewMenu;
@@ -12,7 +19,10 @@ public class GMenuBar extends JMenuBar implements GComponent{
     private List<GComponent> menus = new ArrayList<>();
 
     public GMenuBar() {
-
+        createComponents();
+        setAttributes();
+        arrangeComponents();
+        addEventHandler();
     }
 
     @Override
