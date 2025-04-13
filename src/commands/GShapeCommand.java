@@ -17,6 +17,7 @@ public class GShapeCommand implements GCommand {
     @Override
     public void execute() {
         drawingPanel.addShape(shape);
+        System.out.println("도형 커맨드 실행!");
     }
 
     @Override

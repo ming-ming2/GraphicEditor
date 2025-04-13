@@ -24,6 +24,7 @@ public class GTransFormer {
     }
 
     public void start(Point point) {
+        System.out.println("transformer start");
         currentState.start(point);
     }
 
@@ -32,6 +33,7 @@ public class GTransFormer {
     }
 
     public void finish(Point point) {
+        System.out.println("transformer finish");
         currentState.finish(point);
     }
 }

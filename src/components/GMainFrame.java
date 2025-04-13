@@ -4,6 +4,7 @@ import commands.GCommandManager;
 import commands.GShapeCommand;
 import states.GShapeState;
 import types.GStateType;
+import utils.GTransFormer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +16,6 @@ public class GMainFrame extends JFrame implements GComponent {
     private GMenuBar menuBar;
     private GToolBar toolBar;
     private List<GComponent> componets = new ArrayList<>();
-    private GCommandManager commandManager;
 
     public GMainFrame() {
         setAttributes();
@@ -60,10 +60,11 @@ public class GMainFrame extends JFrame implements GComponent {
 
     public void initialize() {
         this.setVisible(true);
-        commandManager = new GCommandManager();
+        GCommandManager commandManager = new GCommandManager();
         GShapeState.getInstance().setCommandManager(commandManager);
         for (GComponent component : componets) {
             component.initialize();
         }
+        this.toolBar.setTransformer(this.drawingPanel.getTransFormer());
     }
 }

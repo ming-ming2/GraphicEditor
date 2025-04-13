@@ -1,7 +1,13 @@
 package components;
 
+import states.GShapeState;
+import types.GShapeType;
+import utils.GTransFormer;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -11,7 +17,7 @@ public class GToolBar extends JToolBar implements GComponent {
     private JButton currentSelectedButton;
     private Color selectedColor;
     private List<JButton> shapeButtons = new ArrayList<>();
-
+    private GTransFormer transformer;
     private JPanel shapesSection;
 
 
@@ -36,7 +42,6 @@ public class GToolBar extends JToolBar implements GComponent {
         shapesPanel.setLayout(new GridLayout(1, 2, getSmallSpacing(), getSmallSpacing()));
         shapesPanel.setBackground(Color.WHITE);
 
-        // 직사각형과 다각형 버튼만 추가
         addShapeButton(shapesPanel, "직사각형", "Rectangle");
         addShapeButton(shapesPanel, "다각형", "Polygon");
 
@@ -60,7 +65,39 @@ public class GToolBar extends JToolBar implements GComponent {
 
     @Override
     public void addEventHandler() {
+        for (JButton button : shapeButtons) {
+            button.addActionListener(e -> {
+                selectButton(button);
+                String shapeType = button.getToolTipText();
 
+                GShapeState shapeState = GShapeState.getInstance();
+
+                if (shapeType.equals("직사각형")) {
+                    shapeState.setShapeType(GShapeType.RECTANGLE);
+                } else if (shapeType.equals("다각형")) {
+                    shapeState.setShapeType(GShapeType.POLYGON);
+                }
+                if (transformer != null) {
+                    transformer.setState(shapeState);
+                    System.out.println("상태변경!");
+                }
+            });
+        }
+    }
+
+    public void setTransformer(GTransFormer transformer) {
+        this.transformer = transformer;
+    }
+
+    private void selectButton(JButton button) {
+        // 이전에 선택된 버튼 배경색 원래대로
+        if (currentSelectedButton != null) {
+            currentSelectedButton.setBackground(Color.WHITE);
+        }
+
+        // 새 버튼 선택 상태로 변경
+        currentSelectedButton = button;
+        currentSelectedButton.setBackground(selectedColor);
     }
 
     @Override

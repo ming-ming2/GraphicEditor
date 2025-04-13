@@ -4,7 +4,7 @@ import components.GDrawingPanel;
 
 import java.awt.*;
 
-public class GDefaultState implements GState {
+public class GDefaultState extends GState {
 
 
     @Override

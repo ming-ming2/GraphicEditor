@@ -23,7 +23,7 @@ public class GShapeState extends GState {
         if (instance == null) {
             instance = new GShapeState();
         }
-        return new GShapeState();
+        return instance;
     }
 
 

@@ -104,6 +104,10 @@ public class GDrawingPanel extends JPanel implements GComponent {
         bufferedImage = null;
     }
 
+    public GTransFormer getTransFormer() {
+        return transFormer;
+    }
+
     private class MouseHandler implements MouseListener, MouseMotionListener {
         @Override
         public void mouseClicked(MouseEvent e) {
