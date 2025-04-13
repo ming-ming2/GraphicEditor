@@ -8,7 +8,7 @@ import java.awt.*;
 
 public class GTransFormer {
     private GState currentState;
-    private GDrawingPanel drawingPanel;
+    private final GDrawingPanel drawingPanel;
 
     public GTransFormer(GDrawingPanel drawingPanel) {
         this.currentState = new GDefaultState();
@@ -33,7 +33,4 @@ public class GTransFormer {
         currentState.finish(point);
     }
 
-    public GState getCurrentState() {
-        return currentState;
-    }
 }

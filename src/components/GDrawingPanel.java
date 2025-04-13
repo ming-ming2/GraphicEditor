@@ -114,10 +114,7 @@ public class GDrawingPanel extends JPanel implements GComponent {
         @Override
         public void mouseClicked(MouseEvent e) {
             if (isDrawingPolygon && e.getClickCount() == 2) {
-                // 더블클릭 시 다각형 완성
-                if (transFormer.getCurrentState() instanceof GShapeState) {
-                    ((GShapeState) transFormer.getCurrentState()).completePolygon();
-                }
+                GShapeState.getInstance().completePolygon();
             }
         }
 
