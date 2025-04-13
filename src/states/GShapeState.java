@@ -10,28 +10,22 @@ import types.GStateType;
 
 import java.awt.*;
 
-public class GShapeState implements GState {
+public class GShapeState extends GState {
     private static GShapeState instance;
 
     private GShapeType shapeType;
-    private GCommandManager commandManager;
-    private GDrawingPanel drawingPanel;
     private GShape shape;
 
     private GShapeState() {
     }
 
-    public GShapeState getInstance() {
+    public static GShapeState getInstance() {
         if (instance == null) {
             instance = new GShapeState();
         }
         return new GShapeState();
     }
 
-
-    public void setDrawingPanel(GDrawingPanel drawingPanel) {
-        this.drawingPanel = drawingPanel;
-    }
 
     public void setShapeType(GShapeType shapeType) {
         this.shapeType = shapeType;

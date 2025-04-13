@@ -1,5 +1,6 @@
 package utils;
 
+import commands.GCommandManager;
 import components.GDrawingPanel;
 import states.GDefaultState;
 import states.GState;
@@ -14,6 +15,7 @@ public class GTransFormer {
     public GTransFormer(GDrawingPanel drawingPanel) {
         this.currentState = new GDefaultState();
         this.drawingPanel = drawingPanel;
+        this.currentState.setDrawingPanel(drawingPanel);
     }
 
     public void setState(GState drawingState) {

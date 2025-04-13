@@ -10,6 +10,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,9 +19,11 @@ public class GDrawingPanel extends JPanel implements GComponent {
     private static final int DEFAULT_HEIGHT = 600;
     private GTransFormer transFormer;
     private boolean isDrawingPolygon = false;
-    private Graphics2D g;
     private List<GShape> shapes = new ArrayList<>();
     private GShape previewShape;
+
+    private BufferedImage bufferedImage;
+    private Graphics2D bufferedGraphics;
 
     public GDrawingPanel() {
         setAttributes();
@@ -30,15 +33,31 @@ public class GDrawingPanel extends JPanel implements GComponent {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        for (GShape shape : shapes) {
-            shape.draw((Graphics2D) g);
+
+        if (bufferedImage == null) {
+            int width = this.getWidth();
+            int height = this.getHeight();
+            bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            bufferedGraphics = bufferedImage.createGraphics();
+            bufferedGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         }
 
+        bufferedGraphics.setColor(Color.WHITE);
+        bufferedGraphics.fillRect(0, 0, getWidth(), getHeight());
+
+        for (GShape shape : shapes) {
+            shape.draw(bufferedGraphics);
+        }
+
+        if (previewShape != null) {
+            previewShape.draw(bufferedGraphics);
+        }
+
+        g.drawImage(bufferedImage, 0, 0, this);
     }
 
     @Override
     public void createComponents() {
-
     }
 
     @Override
@@ -50,12 +69,13 @@ public class GDrawingPanel extends JPanel implements GComponent {
 
     @Override
     public void arrangeComponents() {
-
     }
 
     @Override
     public void addEventHandler() {
-        this.addMouseListener(new MouseHandler());
+        MouseHandler mouseHandler = new MouseHandler();
+        this.addMouseListener(mouseHandler);
+        this.addMouseMotionListener(mouseHandler);
     }
 
     @Override
@@ -66,6 +86,7 @@ public class GDrawingPanel extends JPanel implements GComponent {
 
     public void setPreviewShape(GShape previewShape) {
         this.previewShape = previewShape;
+        repaint();
     }
 
     public void setDrawingPolygon(boolean drawingPolygon) {
@@ -74,14 +95,18 @@ public class GDrawingPanel extends JPanel implements GComponent {
 
     public void addShape(GShape shape) {
         this.shapes.add(shape);
+        repaint();
+    }
+
+    @Override
+    public void setBounds(int x, int y, int width, int height) {
+        super.setBounds(x, y, width, height);
+        bufferedImage = null;
     }
 
     private class MouseHandler implements MouseListener, MouseMotionListener {
-        private Graphics2D g = (Graphics2D) getGraphics();
-
         @Override
         public void mouseClicked(MouseEvent e) {
-            //
         }
 
         @Override
@@ -106,12 +131,10 @@ public class GDrawingPanel extends JPanel implements GComponent {
 
         @Override
         public void mouseEntered(MouseEvent e) {
-
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
-
         }
     }
 }

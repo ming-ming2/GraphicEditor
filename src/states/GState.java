@@ -1,15 +1,25 @@
 package states;
 
+import commands.GCommandManager;
 import components.GDrawingPanel;
 
 import java.awt.*;
 
-public interface GState {
-    void start(Point point);
+public abstract class GState {
+    protected GDrawingPanel drawingPanel;
+    protected GCommandManager commandManager;
 
-    void update(Point point);
+    public abstract void start(Point point);
 
-    void finish(Point point);
+    public abstract void update(Point point);
 
-    void setDrawingPanel(GDrawingPanel drawingPanel);
+    public abstract void finish(Point point);
+
+    public void setDrawingPanel(GDrawingPanel drawingPanel) {
+        this.drawingPanel = drawingPanel;
+    }
+
+    public void setCommandManager(GCommandManager commandManager) {
+        this.commandManager = commandManager;
+    }
 }

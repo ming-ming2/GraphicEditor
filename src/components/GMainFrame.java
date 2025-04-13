@@ -2,6 +2,7 @@ package components;
 
 import commands.GCommandManager;
 import commands.GShapeCommand;
+import states.GShapeState;
 import types.GStateType;
 
 import javax.swing.*;
@@ -60,6 +61,7 @@ public class GMainFrame extends JFrame implements GComponent {
     public void initialize() {
         this.setVisible(true);
         commandManager = new GCommandManager();
+        GShapeState.getInstance().setCommandManager(commandManager);
         for (GComponent component : componets) {
             component.initialize();
         }

@@ -60,7 +60,7 @@ public class GToolBar extends JToolBar implements GComponent {
 
     @Override
     public void addEventHandler() {
-        // 이벤트 핸들러 코드는 제외 (UI만 구현)
+
     }
 
     @Override
@@ -168,9 +168,9 @@ public class GToolBar extends JToolBar implements GComponent {
                 int[] xPoints = new int[5];
                 int[] yPoints = new int[5];
 
-                int centerX = offsetX + width/2;
-                int centerY = offsetY + height/2;
-                int radius = Math.min(width, height)/2;
+                int centerX = offsetX + width / 2;
+                int centerY = offsetY + height / 2;
+                int radius = Math.min(width, height) / 2;
 
                 for (int i = 0; i < 5; i++) {
                     double angle = 2 * Math.PI * i / 5 - Math.PI / 2;
@@ -182,7 +182,7 @@ public class GToolBar extends JToolBar implements GComponent {
 
                 // 점찍기 효과를 위해 꼭지점에 작은 점 표시
                 for (int i = 0; i < 5; i++) {
-                    g2d.fillOval(xPoints[i]-2, yPoints[i]-2, 4, 4);
+                    g2d.fillOval(xPoints[i] - 2, yPoints[i] - 2, 4, 4);
                 }
 
                 g2d.dispose();
