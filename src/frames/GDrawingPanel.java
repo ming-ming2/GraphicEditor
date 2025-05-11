@@ -5,11 +5,13 @@ import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.Rectangle2D;
 import java.util.Vector;
 
 import javax.swing.JPanel;
 
 import frames.GShapeToolBar.EShapeTool;
+import shapes.GSelectRectangle;
 import shapes.GShape;
 import shapes.GShape.EPoints;
 import transformers.GDrawer;
@@ -46,6 +48,7 @@ public class GDrawingPanel extends JPanel {
 
 	public void initialize() {
 	}
+
 	public void setEShapeTool(EShapeTool eShapeTool) {
 		this.eShapeTool = eShapeTool;
 	}
@@ -58,7 +61,8 @@ public class GDrawingPanel extends JPanel {
 	}
 
 	private GShape onShape(int x, int y) {
-		for (GShape shape: this.shapes) {
+		for (int i = this.shapes.size() - 1; i >= 0; i--) {
+			GShape shape = this.shapes.get(i);
 			if (shape.contains(x, y)) {
 				return shape;
 			}
@@ -66,34 +70,94 @@ public class GDrawingPanel extends JPanel {
 		return null;
 	}
 
+	public void clearSelection() {
+		for (GShape shape : this.shapes) {
+			shape.setSelected(false);
+		}
+		this.selectedShape = null;
+		this.repaint();
+	}
+
 	private void startTransform(int x, int y) {
-		// set shape
-		this.currentShape = eShapeTool.newShape();
-		this.shapes.add(this.currentShape);
 		if (this.eShapeTool == EShapeTool.eSelect) {
-			this.selectedShape = onShape(x, y);
-			if (this.selectedShape == null) {
+			GShape clickedShape = onShape(x, y);
+
+			if (clickedShape == null) {
+				clearSelection();
+				this.currentShape = new GSelectRectangle();
+				this.shapes.add(this.currentShape);
 				this.transformer = new GDrawer(this.currentShape);
 			} else {
-				this.transformer = new GMover(this.selectedShape);
+				if (!clickedShape.isSelected()) {
+					clearSelection();
+					clickedShape.setSelected(true);
+					this.selectedShape = clickedShape;
+					this.repaint();
+				}
+				this.transformer = new GMover(clickedShape);
 			}
 		} else {
+			clearSelection();
+			this.currentShape = eShapeTool.newShape();
+			this.shapes.add(this.currentShape);
 			this.transformer = new GDrawer(this.currentShape);
 		}
+
 		this.transformer.start((Graphics2D) getGraphics(), x, y);
 	}
+
 	private void keepTransform(int x, int y) {
 		this.transformer.drag((Graphics2D) getGraphics(), x, y);
 		this.repaint();
 	}
+
 	private void addPoint(int x, int y) {
 		this.transformer.addPoint((Graphics2D) getGraphics(), x, y);
 	}
+
 	private void finishTransform(int x, int y) {
 		this.transformer.finish((Graphics2D) getGraphics(), x, y);
-		if (this.eShapeTool == EShapeTool.eSelect) {
-			this.shapes.remove(this.shapes.size()-1);
+
+		if (this.eShapeTool == EShapeTool.eSelect && this.currentShape instanceof GSelectRectangle) {
+			GSelectRectangle selectRect = (GSelectRectangle) this.currentShape;
+			Rectangle2D bounds = selectRect.getBounds();
+
+			double x1 = bounds.getX();
+			double y1 = bounds.getY();
+			double x2 = x1 + bounds.getWidth();
+			double y2 = y1 + bounds.getHeight();
+
+			if (bounds.getWidth() < 0) {
+				x1 = x2;
+				x2 = bounds.getX();
+			}
+
+			if (bounds.getHeight() < 0) {
+				y1 = y2;
+				y2 = bounds.getY();
+			}
+
+			Rectangle2D normalizedBounds = new Rectangle2D.Double(
+					Math.min(x1, x2),
+					Math.min(y1, y2),
+					Math.abs(bounds.getWidth()),
+					Math.abs(bounds.getHeight())
+			);
+
+			if (normalizedBounds.getWidth() > 5 && normalizedBounds.getHeight() > 5) {
+				for (GShape shape : this.shapes) {
+					if (shape != selectRect) {
+						if (shape.containedIn(normalizedBounds)) {
+							shape.setSelected(true);
+							this.selectedShape = shape;
+						}
+					}
+				}
+			}
+
+			this.shapes.remove(this.currentShape);
 		}
+
 		this.repaint();
 	}
 
@@ -110,7 +174,6 @@ public class GDrawingPanel extends JPanel {
 
 		private void mouse1Clicked(MouseEvent e) {
 			if (eDrawingState == EDrawingState.eIdle) {
-				// set transformer
 				if (eShapeTool.getEPoints() == EPoints.e2P) {
 					startTransform(e.getX(), e.getY());
 					eDrawingState = EDrawingState.e2P;
@@ -125,6 +188,7 @@ public class GDrawingPanel extends JPanel {
 				addPoint(e.getX(), e.getY());
 			}
 		}
+
 		@Override
 		public void mouseMoved(MouseEvent e) {
 			if (eDrawingState == EDrawingState.e2P) {
@@ -133,6 +197,7 @@ public class GDrawingPanel extends JPanel {
 				keepTransform(e.getX(), e.getY());
 			}
 		}
+
 		private void mouse2Clicked(MouseEvent e) {
 			if (eDrawingState == EDrawingState.eNP) {
 				finishTransform(e.getX(), e.getY());
@@ -143,9 +208,16 @@ public class GDrawingPanel extends JPanel {
 		@Override
 		public void mousePressed(MouseEvent e) {
 		}
+
 		@Override
 		public void mouseDragged(MouseEvent e) {
+			if (eDrawingState == EDrawingState.e2P) {
+				keepTransform(e.getX(), e.getY());
+			} else if (eDrawingState == EDrawingState.eNP) {
+				keepTransform(e.getX(), e.getY());
+			}
 		}
+
 		@Override
 		public void mouseReleased(MouseEvent e) {
 		}
@@ -153,6 +225,7 @@ public class GDrawingPanel extends JPanel {
 		@Override
 		public void mouseEntered(MouseEvent e) {
 		}
+
 		@Override
 		public void mouseExited(MouseEvent e) {
 		}

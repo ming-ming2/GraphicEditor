@@ -10,6 +10,7 @@ import javax.swing.JToolBar;
 
 import shapes.GPolygon;
 import shapes.GRectangle;
+import shapes.GSelectRectangle;
 import shapes.GShape;
 import shapes.GShape.EPoints;
 
@@ -17,7 +18,7 @@ public class GShapeToolBar extends JToolBar {
 	private static final long serialVersionUID = 1L;
 
 	public enum EShapeTool {
-		eSelect("select", EPoints.e2P, GRectangle.class),
+		eSelect("select", EPoints.e2P,  GSelectRectangle.class),
 		eRectnalge("rectangle", EPoints.e2P, GRectangle.class),
 		eEllipse("ellipse", EPoints.e2P, GRectangle.class),
 		eLine("line", EPoints.e2P, GRectangle.class),
