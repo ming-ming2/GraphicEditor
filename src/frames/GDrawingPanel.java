@@ -67,6 +67,8 @@ public class GDrawingPanel extends JPanel {
 	private void startTransform(int x, int y) {
 		// set shape
 		this.currentShape = eShapeTool.newShape();
+		System.out.println("current shapeTool : " + this.eShapeTool);
+		System.out.println("선택 도형 생 : "  + this.currentShape);
 		this.shapes.add(this.currentShape);
 		if (this.eShapeTool == EShapeTool.eSelect) {
 			this.selectedShape = onShape(x, y);

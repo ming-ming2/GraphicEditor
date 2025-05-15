@@ -43,11 +43,11 @@ public class GShapeToolBar extends JToolBar {
 				return shape;
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					 | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-				System.out.println(e.getMessage());
+				e.printStackTrace();
 			}
 			return null;
 		}
-	}	// components
+	}
 
 	// associations
 	private GDrawingPanel drawingPanel;
