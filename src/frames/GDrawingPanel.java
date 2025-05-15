@@ -11,9 +11,7 @@ import javax.swing.JPanel;
 import frames.GShapeToolBar.EShapeTool;
 import shapes.GShape;
 import shapes.GShape.EPoints;
-import transformers.GDrawer;
-import transformers.GMover;
-import transformers.GTransformer;
+import transformers.*;
 
 public class GDrawingPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -58,7 +56,7 @@ public class GDrawingPanel extends JPanel {
 
 	private GShape onShape(int x, int y) {
 		for (GShape shape: this.shapes) {
-			if (shape.contains(x, y)) {
+			if (shape!=null && shape.contains(x, y)) {
 				shape.setSelected(true);
 				return shape;
 			}
@@ -75,25 +73,31 @@ public class GDrawingPanel extends JPanel {
 			if (this.selectedShape == null) {
 				this.transformer = new GDrawer(this.currentShape);
 			} else {
-				this.transformer = new GMover(this.selectedShape);
+				if(this.selectedShape.getESelectedAnchor().equals(GShape.EAnchor.eRR)) {
+					this.transformer = new GRotate(this.selectedShape);
+				} else if(this.selectedShape.getESelectedAnchor() != null){
+					this.transformer = new GResize(this.selectedShape);
+				} else {
+					this.transformer = new GMover(this.selectedShape);
+				}
 			}
 		} else {
 			this.transformer = new GDrawer(this.currentShape);
 		}
-		this.transformer.start((Graphics2D) getGraphics(), x, y);
+		this.transformer.start(x, y);
 	}
 	private void keepTransform(int x, int y) {
-		this.transformer.drag((Graphics2D) getGraphics(), x, y);
+		this.transformer.drag(x, y);
 		this.repaint();
 	}
 	private void addPoint(int x, int y) {
-		this.transformer.addPoint((Graphics2D) getGraphics(), x, y);
+		this.transformer.addPoint(x, y);
 	}
 	private void finishTransform(int x, int y) {
-		this.transformer.finish((Graphics2D) getGraphics(), x, y);
+		this.transformer.finish(x, y);
 		this.selectShape();
 		if (this.eShapeTool == EShapeTool.eSelect) {
-			this.shapes.remove(this.shapes.size()-1);
+			this.shapes.removeLast();
 		}
 		this.repaint();
 	}

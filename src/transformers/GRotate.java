@@ -4,9 +4,10 @@ import shapes.GShape;
 
 import java.awt.*;
 
-public class GMover extends GTransformer {
-    int px, py;
-    public GMover(GShape shape) {
+public class GRotate extends GTransformer{
+    private int px, py;
+
+    public GRotate(GShape shape) {
         super(shape);
     }
 
@@ -18,11 +19,8 @@ public class GMover extends GTransformer {
 
     @Override
     public void drag(int x, int y) {
-        int dx = x-px;
-        int dy = y-py;
-        this.shape.translate(dx,dy);
-        px = x;
-        py = y;
+        double theta = Math.atan2(py-x, py-y);
+        this.shape.rotate(theta);
     }
 
     @Override
@@ -34,4 +32,5 @@ public class GMover extends GTransformer {
     public void addPoint(int x, int y) {
 
     }
+
 }

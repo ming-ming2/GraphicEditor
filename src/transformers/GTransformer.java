@@ -11,8 +11,8 @@ public abstract class GTransformer {
       this.shape = shape;
    }
 
-   public abstract void start(Graphics2D graphics, int x, int y);
-   public abstract void drag(Graphics2D graphics, int x, int y);
-   public abstract void finish(Graphics2D graphics, int x, int y);
-   public abstract void addPoint(Graphics2D graphics, int x, int y);
+   public abstract void start(int x, int y);
+   public abstract void drag(int x, int y);
+   public abstract void finish(int x, int y);
+   public abstract void addPoint(int x, int y);
 }

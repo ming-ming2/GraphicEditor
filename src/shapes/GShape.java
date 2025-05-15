@@ -22,7 +22,7 @@ public abstract class GShape {
         eSW(new Cursor(Cursor.S_RESIZE_CURSOR)),
         eEE(new Cursor(Cursor.E_RESIZE_CURSOR)),
         eWW(new Cursor(Cursor.W_RESIZE_CURSOR)),
-        eRR(new Cursor(Cursor.N_RESIZE_CURSOR)),
+        eRR(new Cursor(Cursor.CUSTOM_CURSOR)),
         eMM(new Cursor(Cursor.HAND_CURSOR));
 
         private Cursor cursor;
@@ -107,6 +107,7 @@ public abstract class GShape {
         }
     }
 
+
     public void draw(Graphics2D graphics2D) {
         Shape transformedShape = this.affineTransform.createTransformedShape(shape);
         graphics2D.draw(transformedShape);
@@ -114,10 +115,11 @@ public abstract class GShape {
             this.setAnchors();
             for(Ellipse2D anchor : this.anchors){
                 Color penColor = graphics2D.getColor();
+                Shape transformedAnchor = this.affineTransform.createTransformedShape(anchor);
                 graphics2D.setColor(graphics2D.getBackground());
-                graphics2D.fill(anchor);
+                graphics2D.fill(transformedAnchor);
                 graphics2D.setColor(penColor);
-                graphics2D.draw(this.affineTransform.createTransformedShape(anchor));
+                graphics2D.draw(transformedAnchor);
             }
         }
     }
@@ -142,6 +144,22 @@ public abstract class GShape {
     public void translate(int dx, int dy) {
         this.affineTransform.translate(dx,dy);
     }
+
+    public void scale(double scaleX, double scaleY) {
+        this.affineTransform.scale(scaleX,scaleY);
+    }
+
+   public void rotate(double theta){
+       this.affineTransform.rotate(theta);
+   }
+
+   public double getWidth(){
+        return this.shape.getBounds2D().getWidth();
+   }
+
+   public double getHeight(){
+        return this.shape.getBounds2D().getHeight();
+   }
 
 
     //draw
