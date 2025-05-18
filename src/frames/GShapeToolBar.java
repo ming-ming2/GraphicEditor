@@ -44,6 +44,7 @@ public class GShapeToolBar extends JToolBar {
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					 | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 				e.printStackTrace();
+
 			}
 			return null;
 		}

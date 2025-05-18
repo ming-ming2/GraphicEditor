@@ -22,7 +22,7 @@ public abstract class GShape {
         eSW(new Cursor(Cursor.S_RESIZE_CURSOR)),
         eEE(new Cursor(Cursor.E_RESIZE_CURSOR)),
         eWW(new Cursor(Cursor.W_RESIZE_CURSOR)),
-        eRR(new Cursor(Cursor.CUSTOM_CURSOR)),
+        eRR(new Cursor(Cursor.HAND_CURSOR)),
         eMM(new Cursor(Cursor.HAND_CURSOR));
 
         private Cursor cursor;
