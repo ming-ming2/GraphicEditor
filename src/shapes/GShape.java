@@ -7,7 +7,7 @@ import java.awt.geom.Ellipse2D;
 public abstract class GShape {
     private final static int ANCHOR_WIDTH = 10;
     private final static int ANCHOR_HEIGHT = 10;
-    private final AffineTransform affineTransform;
+    private AffineTransform affineTransform;
 
 
 
@@ -72,39 +72,41 @@ public abstract class GShape {
     public AffineTransform getAffineTransform() {
         return affineTransform;
     }
+
+    public void setAffineTransform(AffineTransform at) {
+        this.affineTransform = at;
+    }
+
     public EAnchor getESelectedAnchor() {
         return this.eSelectedAnchor;
     }
 
     private void setAnchors(){
-        Rectangle bounds = this.shape.getBounds();
-        int bx = bounds.x;
-        int by = bounds.y;
-        int bw = bounds.width;
-        int bh = bounds.height;
+        Shape transformedShape = this.affineTransform.createTransformedShape(shape);
+        Rectangle bounds = transformedShape.getBounds();
 
         int cx = 0;
         int cy = 0;
         for(int i = 0; i < this.anchors.length; i++){
             switch(EAnchor.values()[i]){
                 case eNN:
-                    cx = bx + bw/2; cy = by; break;
+                    cx = bounds.x + bounds.width/2; cy = bounds.y; break;
                 case eNE:
-                    cx = bx + bw; cy = by; break;
+                    cx = bounds.x + bounds.width; cy = bounds.y; break;
                 case eNW:
-                    cx = bx; cy = by; break;
+                    cx = bounds.x; cy = bounds.y; break;
                 case eSS:
-                    cx = bx + bw/2; cy = by + bh; break;
+                    cx = bounds.x + bounds.width/2; cy = bounds.y + bounds.height; break;
                 case eSE:
-                    cx = bx + bw; cy = by + bh; break;
+                    cx = bounds.x + bounds.width; cy = bounds.y + bounds.height; break;
                 case eSW:
-                    cx = bx; cy = by+bh; break;
+                    cx = bounds.x; cy = bounds.y+bounds.height; break;
                 case eEE:
-                    cx = bx + bw; cy = by + bh/2; break;
+                    cx = bounds.x + bounds.width; cy = bounds.y + bounds.height/2; break;
                 case eWW:
-                    cx = bx; cy = by + bh/2; break;
+                    cx = bounds.x; cy = bounds.y + bounds.height/2; break;
                 case eRR:
-                    cx = bx + bw/2; cy = by -30; break;
+                    cx = bounds.x + bounds.width/2; cy = bounds.y -30; break;
             }
 
             anchors[i].setFrame(cx - (double) ANCHOR_WIDTH /2, cy - (double) ANCHOR_HEIGHT /2, ANCHOR_WIDTH, ANCHOR_HEIGHT);
@@ -115,24 +117,24 @@ public abstract class GShape {
     public void draw(Graphics2D graphics2D) {
         Shape transformedShape = this.affineTransform.createTransformedShape(shape);
         graphics2D.draw(transformedShape);
+
         if(bSelected){
             this.setAnchors();
             for(Ellipse2D anchor : this.anchors){
                 Color penColor = graphics2D.getColor();
-                Shape transformedAnchor = this.affineTransform.createTransformedShape(anchor);
                 graphics2D.setColor(graphics2D.getBackground());
-                graphics2D.fill(transformedAnchor);
+                graphics2D.fill(anchor);
                 graphics2D.setColor(penColor);
-                graphics2D.draw(transformedAnchor);
+                graphics2D.draw(anchor);
             }
         }
     }
 
     public boolean contains(int x, int y) {
         if(bSelected) {
+            this.setAnchors();
             for(int i = 0; i < this.anchors.length; i++) {
-                Shape transformedAnchor = this.affineTransform.createTransformedShape(anchors[i]);
-                if(transformedAnchor.contains(x, y)) {
+                if(anchors[i].contains(x, y)) {
                     this.eSelectedAnchor = EAnchor.values()[i];
                     return true;
                 }
@@ -146,7 +148,6 @@ public abstract class GShape {
         }
         return false;
     }
-
 
     public void translate(int dx, int dy) {
         this.affineTransform.translate(dx,dy);
@@ -167,6 +168,7 @@ public abstract class GShape {
    public double getHeight(){
         return this.shape.getBounds2D().getHeight();
    }
+
 
 
     //draw

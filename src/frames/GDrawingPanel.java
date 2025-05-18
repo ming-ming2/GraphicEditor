@@ -75,7 +75,15 @@ public class GDrawingPanel extends JPanel {
 				this.transformer = new GDrawer(this.currentShape);
 				clearAllSelections();
 			} else {
-				this.transformer = new GMover(this.selectedShape);
+				GShape.EAnchor eAnchor = this.selectedShape.getESelectedAnchor();
+
+				if (eAnchor == GShape.EAnchor.eRR) {
+					this.transformer = new GRotate(this.selectedShape);
+				} else if (eAnchor != null && eAnchor != GShape.EAnchor.eMM) {
+					this.transformer = new GResize(this.selectedShape);
+				} else {
+					this.transformer = new GMover(this.selectedShape);
+				}
 			}
 		} else {
 			this.transformer = new GDrawer(this.currentShape);
