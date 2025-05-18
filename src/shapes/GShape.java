@@ -9,6 +9,8 @@ public abstract class GShape {
     private final static int ANCHOR_HEIGHT = 10;
     private final AffineTransform affineTransform;
 
+
+
     public enum EPoints {
         e2P,
         eNP;
@@ -57,7 +59,7 @@ public abstract class GShape {
 
     //getters and setters
 
-    protected Shape getShape() {
+    public Shape getShape() {
         return this.shape;
     }
     public boolean isSelected() {
@@ -67,7 +69,9 @@ public abstract class GShape {
     public void setSelected(boolean bSelected) {
         this.bSelected = bSelected;
     }
-
+    public AffineTransform getAffineTransform() {
+        return affineTransform;
+    }
     public EAnchor getESelectedAnchor() {
         return this.eSelectedAnchor;
     }
@@ -124,16 +128,19 @@ public abstract class GShape {
         }
     }
 
-    public boolean contains(int x, int y){
-        if(bSelected){
-            for(int i = 0; i < this.anchors.length; i++){
-                if(anchors[i].contains(x, y)){
+    public boolean contains(int x, int y) {
+        if(bSelected) {
+            for(int i = 0; i < this.anchors.length; i++) {
+                Shape transformedAnchor = this.affineTransform.createTransformedShape(anchors[i]);
+                if(transformedAnchor.contains(x, y)) {
                     this.eSelectedAnchor = EAnchor.values()[i];
                     return true;
                 }
             }
         }
-        if(this.shape.contains(x, y)){
+
+        Shape transformedShape = this.affineTransform.createTransformedShape(this.shape);
+        if(transformedShape.contains(x, y)) {
             this.eSelectedAnchor = EAnchor.eMM;
             return true;
         }

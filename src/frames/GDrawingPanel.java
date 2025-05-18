@@ -65,28 +65,29 @@ public class GDrawingPanel extends JPanel {
 	}
 
 	private void startTransform(int x, int y) {
-		// set shape
 		this.currentShape = eShapeTool.newShape();
-		System.out.println("current shapeTool : " + this.eShapeTool);
-		System.out.println("선택 도형 생성 : "  + this.currentShape);
 		this.shapes.add(this.currentShape);
+
 		if (this.eShapeTool == EShapeTool.eSelect) {
 			this.selectedShape = onShape(x, y);
+
 			if (this.selectedShape == null) {
 				this.transformer = new GDrawer(this.currentShape);
+				clearAllSelections();
 			} else {
-				if(this.selectedShape.getESelectedAnchor().equals(GShape.EAnchor.eRR)) {
-					this.transformer = new GRotate(this.selectedShape);
-				} else if(this.selectedShape.getESelectedAnchor() != null){
-					this.transformer = new GResize(this.selectedShape);
-				} else {
-					this.transformer = new GMover(this.selectedShape);
-				}
+				this.transformer = new GMover(this.selectedShape);
 			}
 		} else {
 			this.transformer = new GDrawer(this.currentShape);
 		}
 		this.transformer.start(x, y);
+	}
+
+	private void clearAllSelections() {
+		for (GShape shape : this.shapes) {
+			shape.setSelected(false);
+		}
+		this.repaint();
 	}
 	private void keepTransform(int x, int y) {
 		this.transformer.drag(x, y);
@@ -97,11 +98,32 @@ public class GDrawingPanel extends JPanel {
 	}
 	private void finishTransform(int x, int y) {
 		this.transformer.finish(x, y);
-		this.selectShape();
+
 		if (this.eShapeTool == EShapeTool.eSelect) {
-			this.shapes.removeLast();
+			if (this.selectedShape == null) {
+				selectShapesInRectangle();
+				this.shapes.removeLast();
+			}
+		} else {
+			this.selectShape();
 		}
+
 		this.repaint();
+	}
+
+	private void selectShapesInRectangle() {
+		Rectangle selectionBounds = this.currentShape.getShape().getBounds();
+
+		for (GShape shape : this.shapes) {
+			if (shape != this.currentShape) {
+				Shape transformedShape = shape.getAffineTransform().createTransformedShape(shape.getShape());
+				Rectangle shapeBounds = transformedShape.getBounds();
+
+				if (selectionBounds.contains(shapeBounds)) {
+					shape.setSelected(true);
+				}
+			}
+		}
 	}
 
 	private void selectShape() {
@@ -110,7 +132,6 @@ public class GDrawingPanel extends JPanel {
 		}
 		this.currentShape.setSelected(true);
 	}
-
 	private void changeCursor(int x, int y) {
 		this.selectedShape = onShape(x, y);
 		if(this.selectedShape == null) {
@@ -132,16 +153,11 @@ public class GDrawingPanel extends JPanel {
 				this.mouse2Clicked(e);
 			}
 		}
+
 		private void mouse1Clicked(MouseEvent e) {
 			if (eDrawingState == EDrawingState.eIdle) {
-				// set transformer
-				if (eShapeTool.getEPoints() == EPoints.e2P) {
-					startTransform(e.getX(), e.getY());
-					eDrawingState = EDrawingState.e2P;
-				} else if (eShapeTool.getEPoints() == EPoints.eNP) {
-					startTransform(e.getX(), e.getY());
-					eDrawingState = EDrawingState.eNP;
-				}
+				startTransform(e.getX(), e.getY());
+				eDrawingState = EDrawingState.e2P;
 			} else if (eDrawingState == EDrawingState.e2P) {
 				finishTransform(e.getX(), e.getY());
 				eDrawingState = EDrawingState.eIdle;
@@ -149,6 +165,7 @@ public class GDrawingPanel extends JPanel {
 				addPoint(e.getX(), e.getY());
 			}
 		}
+
 		@Override
 		public void mouseMoved(MouseEvent e) {
 			if (eDrawingState == EDrawingState.e2P) {
