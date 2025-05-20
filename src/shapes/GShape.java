@@ -26,15 +26,16 @@ public abstract class GShape {
         e2P,
         eNP;
 
-    }
 
+    }
     private enum ECursor {
 
-        }
+
+    }
     private Shape shape;
     private Ellipse2D[] anchors;
-
     private boolean bSelected;
+
     private EAnchor eSelectedAnchor;
     private int px,py;
     public GShape(Shape shape) {
@@ -47,19 +48,18 @@ public abstract class GShape {
         this.eSelectedAnchor = null;
         this.affineTransform = new AffineTransform();
     }
-
     //getters and setters
-    protected Shape getShape() {
+
+    public Shape getShape() {
         return this.shape;
     }
-
     public boolean isSelected() {
         return this.bSelected;
     }
+
     public void setSelected(boolean bSelected) {
         this.bSelected = bSelected;
     }
-
     public EAnchor getESelectedAnchor() {
         return this.eSelectedAnchor;
     }
@@ -68,7 +68,7 @@ public abstract class GShape {
         return shape.getBounds();
     }
 
-    private void setAnchors(){
+    protected void setAnchors(){
         Rectangle bounds = this.shape.getBounds();
         int bx = bounds.x;
         int by = bounds.y;
@@ -103,6 +103,10 @@ public abstract class GShape {
         }
     }
 
+
+    protected Ellipse2D[] getAnchors() {
+        return anchors;
+    }
 
     public void draw(Graphics2D graphics2D) {
         Shape transformedShape = this.affineTransform.createTransformedShape(shape);

@@ -30,6 +30,7 @@ public class GDrawingPanel extends JPanel {
 	private GShape selectedShape;
 	private EShapeTool eShapeTool;
 	private EDrawingState eDrawingState;
+	private boolean multiSelection;
 
 	public GDrawingPanel() {
 		MouseHandler mouseHandler = new MouseHandler();
@@ -41,6 +42,7 @@ public class GDrawingPanel extends JPanel {
 		this.shapes = new Vector<GShape>();
 		this.eShapeTool = null;
 		this.eDrawingState = EDrawingState.eIdle;
+		this.multiSelection = false;
 	}
 
 	public void initialize() {
@@ -57,24 +59,37 @@ public class GDrawingPanel extends JPanel {
 	}
 
 	private GShape onShape(int x, int y) {
-		for (GShape shape: this.shapes) {
-			if (shape!=null && shape.contains(x, y)) {
-				shape.setSelected(true);
+		for (int i = shapes.size() - 1; i >= 0; i--) {
+			GShape shape = shapes.get(i);
+			if (shape != null && shape.contains(x, y)) {
 				return shape;
 			}
 		}
 		return null;
 	}
 
+	private void clearSelection() {
+		for (GShape shape : this.shapes) {
+			shape.setSelected(false);
+		}
+	}
+
 	private void startTransform(int x, int y) {
-		// set shape
 		this.currentShape = eShapeTool.newShape();
 		this.shapes.add(this.currentShape);
+
 		if (this.eShapeTool == EShapeTool.eSelect) {
 			this.selectedShape = onShape(x, y);
 			if (this.selectedShape == null) {
 				this.transformer = new GDrawer(this.currentShape);
+				clearSelection();
+				multiSelection = true;
 			} else {
+				if (!this.selectedShape.isSelected()) {
+					clearSelection();
+					this.selectedShape.setSelected(true);
+				}
+
 				if(this.selectedShape.getESelectedAnchor().equals(EAnchor.eRR)) {
 					this.transformer = new GRotater(this.selectedShape);
 				} else if(this.selectedShape.getESelectedAnchor().equals(EAnchor.eMM)) {
@@ -88,34 +103,48 @@ public class GDrawingPanel extends JPanel {
 		}
 		this.transformer.start(x, y);
 	}
+
 	private void keepTransform(int x, int y) {
 		this.transformer.drag(x, y);
 		this.repaint();
 	}
+
 	private void addPoint(int x, int y) {
 		this.transformer.addPoint(x, y);
+		this.repaint();
 	}
+
 	private void finishTransform(int x, int y) {
 		this.transformer.finish(x, y);
-		this.selectShape();
+
 		if (this.eShapeTool == GConstants.EShapeTool.eSelect) {
-			this.shapes.removeLast();
-			for(GShape shape: this.shapes) {
-				if(this.currentShape.contains(shape)) {
-					shape.setSelected(true);
-				} else {
-					shape.setSelected(false);
-				}
+			if (multiSelection) {
+				this.selectShapesInArea();
+				this.shapes.removeLast();
+				multiSelection = false;
 			}
+		} else {
+			this.selectShape();
 		}
+
 		this.repaint();
 	}
 
 	private void selectShape() {
-		for(GShape shape: this.shapes) {
-			shape.setSelected(false);
-		}
+		clearSelection();
 		this.currentShape.setSelected(true);
+	}
+
+	private void selectShapesInArea() {
+		Rectangle selectionArea = this.currentShape.getBounds().getBounds();
+
+		for (GShape shape : this.shapes) {
+			if (shape != this.currentShape) {
+				if (selectionArea.contains(shape.getBounds().getBounds())) {
+					shape.setSelected(true);
+				}
+			}
+		}
 	}
 
 	private void changeCursor(int x, int y) {
@@ -131,8 +160,6 @@ public class GDrawingPanel extends JPanel {
 	}
 
 	private class MouseHandler implements MouseListener, MouseMotionListener {
-
-
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			if (e.getClickCount() == 1) {
@@ -141,9 +168,9 @@ public class GDrawingPanel extends JPanel {
 				this.mouse2Clicked(e);
 			}
 		}
+
 		private void mouse1Clicked(MouseEvent e) {
 			if (eDrawingState == EDrawingState.eIdle) {
-				// set transformer
 				if (eShapeTool.getEPoints() == EPoints.e2P) {
 					startTransform(e.getX(), e.getY());
 					eDrawingState = EDrawingState.e2P;
@@ -158,6 +185,7 @@ public class GDrawingPanel extends JPanel {
 				addPoint(e.getX(), e.getY());
 			}
 		}
+
 		@Override
 		public void mouseMoved(MouseEvent e) {
 			if (eDrawingState == EDrawingState.e2P) {
@@ -175,9 +203,11 @@ public class GDrawingPanel extends JPanel {
 				eDrawingState = EDrawingState.eIdle;
 			}
 		}
+
 		@Override
 		public void mousePressed(MouseEvent e) {
 		}
+
 		@Override
 		public void mouseDragged(MouseEvent e) {
 		}
@@ -185,12 +215,13 @@ public class GDrawingPanel extends JPanel {
 		@Override
 		public void mouseReleased(MouseEvent e) {
 		}
+
 		@Override
 		public void mouseEntered(MouseEvent e) {
 		}
+
 		@Override
 		public void mouseExited(MouseEvent e) {
 		}
-
 	}
 }
