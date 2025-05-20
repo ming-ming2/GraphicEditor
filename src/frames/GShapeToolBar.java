@@ -15,7 +15,7 @@ import shapes.GRectangle;
 import shapes.GShape;
 import shapes.GShape.EPoints;
 
-public class GShapeToolBar extends JToolBar {
+public class GShapeToolBar extends JToolBar implements GComponent {
 	private static final long serialVersionUID = 1L;
 
 
@@ -33,6 +33,26 @@ public class GShapeToolBar extends JToolBar {
 			buttonGroup.add(radioButton);
 			this.add(radioButton);
 		}
+	}
+
+	@Override
+	public void createComponents() {
+
+	}
+
+	@Override
+	public void setAttributes() {
+
+	}
+
+	@Override
+	public void arrangeComponents() {
+
+	}
+
+	@Override
+	public void addEventHandler() {
+
 	}
 
 	public void initialize() {

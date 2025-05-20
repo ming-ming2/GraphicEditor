@@ -4,7 +4,7 @@ import menus.GFileMenu;
 
 import javax.swing.JMenuBar;
 
-public class GMenuBar extends JMenuBar {
+public class GMenuBar extends JMenuBar implements GComponent {
 	private static final long serialVersionUID = 1L;
 	//components
 	private GFileMenu fileMenu;
@@ -15,6 +15,26 @@ public class GMenuBar extends JMenuBar {
 	public GMenuBar() {
 		this.fileMenu = new GFileMenu();
 		this.add(fileMenu);
+	}
+
+	@Override
+	public void createComponents() {
+
+	}
+
+	@Override
+	public void setAttributes() {
+
+	}
+
+	@Override
+	public void arrangeComponents() {
+
+	}
+
+	@Override
+	public void addEventHandler() {
+
 	}
 
 	public void initialize() {
