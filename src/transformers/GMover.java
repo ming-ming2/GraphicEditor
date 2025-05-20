@@ -20,7 +20,7 @@ public class GMover extends GTransformer {
     public void drag(int x, int y) {
         int dx = x-px;
         int dy = y-py;
-        this.shape.translate(dx,dy);
+        this.shape.getAffineTransform().translate(dx, dy);
         px = x;
         py = y;
     }

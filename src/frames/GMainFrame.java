@@ -1,9 +1,13 @@
 package frames;
 
+import global.GConstants;
+
 import java.awt.*;
 import java.io.Serial;
 
 import javax.swing.JFrame;
+
+import static global.GConstants.GMainFrame.WIDTH;
 
 public class GMainFrame extends JFrame {
 	@Serial
@@ -15,7 +19,7 @@ public class GMainFrame extends JFrame {
 	public GMainFrame(){
 		//attributes
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-		this.setSize(1200, 600);
+		this.setSize(GConstants.GMainFrame.WIDTH, GConstants.GMainFrame.HEIGHT);
 		this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setLayout(new BorderLayout());

@@ -8,6 +8,8 @@ import javax.swing.ButtonGroup;
 import javax.swing.JRadioButton;
 import javax.swing.JToolBar;
 
+import global.GConstants;
+import global.GConstants.EShapeTool;
 import shapes.GPolygon;
 import shapes.GRectangle;
 import shapes.GShape;
@@ -16,39 +18,6 @@ import shapes.GShape.EPoints;
 public class GShapeToolBar extends JToolBar {
 	private static final long serialVersionUID = 1L;
 
-	public enum EShapeTool {
-		eSelect("select", EPoints.e2P, GRectangle.class),
-		eRectangle("rectangle", EPoints.e2P, GRectangle.class),
-		eEllipse("ellipse", EPoints.e2P, GRectangle.class),
-		eLine("line", EPoints.e2P, GRectangle.class),
-		ePolygon("polygon", EPoints.eNP, GPolygon.class);
-
-		private String name;
-		private EPoints ePoints;
-		private Class<?> classShape;
-		private EShapeTool(String name, EPoints ePoints, Class<?> classShape) {
-			this.name = name;
-			this.ePoints = ePoints;
-			this.classShape = classShape;
-		}
-		public String getName() {
-			return this.name;
-		}
-		public EPoints getEPoints() {
-			return this.ePoints;
-		}
-		public GShape newShape() {
-			try {
-				GShape shape = (GShape) classShape.getConstructor().newInstance();
-				return shape;
-			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-					 | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-				e.printStackTrace();
-
-			}
-			return null;
-		}
-	}
 
 	// associations
 	private GDrawingPanel drawingPanel;
@@ -79,7 +48,7 @@ public class GShapeToolBar extends JToolBar {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			String sShapeType = e.getActionCommand();
-			EShapeTool eShapeType = EShapeTool.valueOf(sShapeType);
+			GConstants.EShapeTool eShapeType = GConstants.EShapeTool.valueOf(sShapeType);
 			drawingPanel.setEShapeTool(eShapeType);
 		}
 	}

@@ -2,12 +2,10 @@ package transformers;
 
 import shapes.GShape;
 
-import java.awt.*;
-
-public class GRotate extends GTransformer{
+public class GRotater extends GTransformer{
     private int px, py;
 
-    public GRotate(GShape shape) {
+    public GRotater(GShape shape) {
         super(shape);
     }
 

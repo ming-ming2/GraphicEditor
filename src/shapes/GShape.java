@@ -1,48 +1,39 @@
 package shapes;
 
+import global.GConstants;
+
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
+
+import static global.GConstants.*;
 
 public abstract class GShape {
     private final static int ANCHOR_WIDTH = 10;
     private final static int ANCHOR_HEIGHT = 10;
-    private AffineTransform affineTransform;
+    private final AffineTransform affineTransform;
 
+    public Shape getTransformedShape() {
+        return this.affineTransform.createTransformedShape(this.shape);
+    }
 
+    public boolean contains(GShape shape) {
+        return this.shape.intersects(shape.getShape().getBounds());
+    }
 
     public enum EPoints {
         e2P,
         eNP;
-    }
-    public enum EAnchor {
-        eNN(new Cursor(Cursor.N_RESIZE_CURSOR)),
-        eNE(new Cursor(Cursor.N_RESIZE_CURSOR)),
-        eNW(new Cursor(Cursor.N_RESIZE_CURSOR)),
-        eSS(new Cursor(Cursor.S_RESIZE_CURSOR)),
-        eSE(new Cursor(Cursor.S_RESIZE_CURSOR)),
-        eSW(new Cursor(Cursor.S_RESIZE_CURSOR)),
-        eEE(new Cursor(Cursor.E_RESIZE_CURSOR)),
-        eWW(new Cursor(Cursor.W_RESIZE_CURSOR)),
-        eRR(new Cursor(Cursor.HAND_CURSOR)),
-        eMM(new Cursor(Cursor.HAND_CURSOR));
-
-        private Cursor cursor;
-
-        EAnchor(Cursor cursor) {
-            this.cursor = cursor;
-        }
-        public Cursor getCursor() {
-            return this.cursor;
-        }
 
     }
+
     private enum ECursor {
 
-    }
+        }
     private Shape shape;
-
     private Ellipse2D[] anchors;
+
     private boolean bSelected;
     private EAnchor eSelectedAnchor;
     private int px,py;
@@ -58,55 +49,54 @@ public abstract class GShape {
     }
 
     //getters and setters
-
-    public Shape getShape() {
+    protected Shape getShape() {
         return this.shape;
     }
+
     public boolean isSelected() {
         return this.bSelected;
     }
-
     public void setSelected(boolean bSelected) {
         this.bSelected = bSelected;
-    }
-    public AffineTransform getAffineTransform() {
-        return affineTransform;
-    }
-
-    public void setAffineTransform(AffineTransform at) {
-        this.affineTransform = at;
     }
 
     public EAnchor getESelectedAnchor() {
         return this.eSelectedAnchor;
     }
 
+    public Rectangle2D getBounds() {
+        return shape.getBounds();
+    }
+
     private void setAnchors(){
-        Shape transformedShape = this.affineTransform.createTransformedShape(shape);
-        Rectangle bounds = transformedShape.getBounds();
+        Rectangle bounds = this.shape.getBounds();
+        int bx = bounds.x;
+        int by = bounds.y;
+        int bw = bounds.width;
+        int bh = bounds.height;
 
         int cx = 0;
         int cy = 0;
         for(int i = 0; i < this.anchors.length; i++){
             switch(EAnchor.values()[i]){
                 case eNN:
-                    cx = bounds.x + bounds.width/2; cy = bounds.y; break;
+                    cx = bx + bw/2; cy = by; break;
                 case eNE:
-                    cx = bounds.x + bounds.width; cy = bounds.y; break;
+                    cx = bx + bw; cy = by; break;
                 case eNW:
-                    cx = bounds.x; cy = bounds.y; break;
+                    cx = bx; cy = by; break;
                 case eSS:
-                    cx = bounds.x + bounds.width/2; cy = bounds.y + bounds.height; break;
+                    cx = bx + bw/2; cy = by + bh; break;
                 case eSE:
-                    cx = bounds.x + bounds.width; cy = bounds.y + bounds.height; break;
+                    cx = bx + bw; cy = by + bh; break;
                 case eSW:
-                    cx = bounds.x; cy = bounds.y+bounds.height; break;
+                    cx = bx; cy = by+bh; break;
                 case eEE:
-                    cx = bounds.x + bounds.width; cy = bounds.y + bounds.height/2; break;
+                    cx = bx + bw; cy = by + bh/2; break;
                 case eWW:
-                    cx = bounds.x; cy = bounds.y + bounds.height/2; break;
+                    cx = bx; cy = by + bh/2; break;
                 case eRR:
-                    cx = bounds.x + bounds.width/2; cy = bounds.y -30; break;
+                    cx = bx + bw/2; cy = by -30; break;
             }
 
             anchors[i].setFrame(cx - (double) ANCHOR_WIDTH /2, cy - (double) ANCHOR_HEIGHT /2, ANCHOR_WIDTH, ANCHOR_HEIGHT);
@@ -117,40 +107,39 @@ public abstract class GShape {
     public void draw(Graphics2D graphics2D) {
         Shape transformedShape = this.affineTransform.createTransformedShape(shape);
         graphics2D.draw(transformedShape);
-
         if(bSelected){
             this.setAnchors();
-            for(Ellipse2D anchor : this.anchors){
+            for(int i = 0; i < this.anchors.length; i++){
+                Shape transformedAnchor = this.affineTransform.createTransformedShape(this.anchors[i]);
                 Color penColor = graphics2D.getColor();
                 graphics2D.setColor(graphics2D.getBackground());
-                graphics2D.fill(anchor);
+                graphics2D.fill(transformedAnchor);
                 graphics2D.setColor(penColor);
-                graphics2D.draw(anchor);
+                graphics2D.draw(transformedAnchor);
             }
         }
     }
 
-    public boolean contains(int x, int y) {
-        if(bSelected) {
-            this.setAnchors();
-            for(int i = 0; i < this.anchors.length; i++) {
-                if(anchors[i].contains(x, y)) {
+    public boolean contains(int x, int y){
+        if(bSelected){
+            for(int i = 0; i < this.anchors.length; i++){
+                Shape transformedAnchor = this.affineTransform.createTransformedShape(this.anchors[i]);
+                if(transformedAnchor.contains(x, y)){
                     this.eSelectedAnchor = EAnchor.values()[i];
                     return true;
                 }
             }
         }
-
-        Shape transformedShape = this.affineTransform.createTransformedShape(this.shape);
-        if(transformedShape.contains(x, y)) {
+        Shape transformedShape = this.affineTransform.createTransformedShape(shape);
+        if(transformedShape.contains(x, y)){
             this.eSelectedAnchor = EAnchor.eMM;
             return true;
         }
         return false;
     }
 
-    public void translate(int dx, int dy) {
-        this.affineTransform.translate(dx,dy);
+    public AffineTransform getAffineTransform(){
+        return this.affineTransform;
     }
 
     public void scale(double scaleX, double scaleY) {
@@ -159,14 +148,6 @@ public abstract class GShape {
 
    public void rotate(double theta){
        this.affineTransform.rotate(theta);
-   }
-
-   public double getWidth(){
-        return this.shape.getBounds2D().getWidth();
-   }
-
-   public double getHeight(){
-        return this.shape.getBounds2D().getHeight();
    }
 
 
