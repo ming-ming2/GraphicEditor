@@ -1,175 +1,177 @@
 package transformers;
 
-import global.GConstants;
+import global.GConstants.EAnchor;
 import shapes.GShape;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-
-import static global.GConstants.*;
+import java.awt.Rectangle;
 
 public class GResizer extends GTransformer {
 
-    private AffineTransform initialTransformAtStart; // 리사이즈 시작 시 도형의 변환
-    private Point2D.Double worldPivotPoint;         // 고정점 (월드 좌표)
-    private Point2D.Double worldDragStartPoint;     // 드래그 시작점 (월드 좌표)
-    private EAnchor selectedAnchor;                 // 선택된 앵커
-    private Rectangle2D initialTransformedBounds;   // 리사이즈 시작 시 변환된 경계
-    private double initialRotation;                 // 초기 회전 각도 (라디안)
+    private EAnchor anchor;
+    private Rectangle originalBounds;
+    private AffineTransform originalTransform;
+
+    private double rotationAngle;
+
+    private Point2D.Double anchorPoint;
+    private Point2D.Double oppositePoint;
+
+    private Point2D.Double transformedOpposite;
+
+    private boolean initialFlipX = false;
+    private boolean initialFlipY = false;
+    private double initialScaleXMagnitude = 1.0;
+    private double initialScaleYMagnitude = 1.0;
+
+    private static final double MIN_SIZE = 5.0;
+    private static final double EPSILON = 1e-6;
 
     public GResizer(GShape shape) {
         super(shape);
-        this.worldPivotPoint = new Point2D.Double();
-        this.worldDragStartPoint = new Point2D.Double();
+        this.anchorPoint = new Point2D.Double();
+        this.oppositePoint = new Point2D.Double();
+        this.transformedOpposite = new Point2D.Double();
     }
 
     @Override
     public void start(int x, int y) {
-        this.selectedAnchor = shape.getESelectedAnchor();
-        if (this.selectedAnchor == null || this.selectedAnchor == EAnchor.eMM || this.selectedAnchor == EAnchor.eRR) {
-            this.selectedAnchor = null;
+        this.anchor = shape.getESelectedAnchor();
+        if (anchor == null || anchor == EAnchor.eMM || anchor == EAnchor.eRR) {
             return;
         }
 
-        this.initialTransformAtStart = new AffineTransform(shape.getAffineTransform());
-        this.initialTransformedBounds = shape.getTransformedShape().getBounds2D();
-        this.worldDragStartPoint.setLocation(x, y);
+        this.originalBounds = shape.getShape().getBounds();
+        this.originalTransform = new AffineTransform(shape.getAffineTransform());
 
-        // 초기 회전 각도 추출
         double[] matrix = new double[6];
-        initialTransformAtStart.getMatrix(matrix);
-        this.initialRotation = Math.atan2(matrix[1], matrix[0]);
+        originalTransform.getMatrix(matrix);
 
-        // 앵커에 따른 피벗점 설정 (반대쪽 앵커를 피벗점으로)
-        double minX = initialTransformedBounds.getMinX();
-        double minY = initialTransformedBounds.getMinY();
-        double midX = initialTransformedBounds.getCenterX();
-        double midY = initialTransformedBounds.getCenterY();
-        double maxX = initialTransformedBounds.getMaxX();
-        double maxY = initialTransformedBounds.getMaxY();
+        this.rotationAngle = Math.atan2(matrix[1], matrix[0]);
 
-        switch (this.selectedAnchor) {
-            case eNW: this.worldPivotPoint.setLocation(maxX, maxY); break; // SE가 피벗
-            case eNN: this.worldPivotPoint.setLocation(midX, maxY); break; // SS가 피벗
-            case eNE: this.worldPivotPoint.setLocation(minX, maxY); break; // SW가 피벗
-            case eWW: this.worldPivotPoint.setLocation(maxX, midY); break; // EE가 피벗
-            case eEE: this.worldPivotPoint.setLocation(minX, midY); break; // WW가 피벗
-            case eSW: this.worldPivotPoint.setLocation(maxX, minY); break; // NE가 피벗
-            case eSS: this.worldPivotPoint.setLocation(midX, minY); break; // NN가 피벗
-            case eSE: this.worldPivotPoint.setLocation(minX, minY); break; // NW가 피벗
-            default:
-                this.selectedAnchor = null;
-                return;
+        this.initialScaleXMagnitude = Math.sqrt(matrix[0] * matrix[0] + matrix[1] * matrix[1]);
+        this.initialScaleYMagnitude = Math.sqrt(matrix[2] * matrix[2] + matrix[3] * matrix[3]);
+
+        this.initialFlipX = (matrix[0] * Math.cos(rotationAngle) + matrix[1] * Math.sin(rotationAngle)) < 0;
+        this.initialFlipY = (matrix[2] * -Math.sin(rotationAngle) + matrix[3] * Math.cos(rotationAngle)) < 0;
+
+        calculateAnchorPoints();
+        originalTransform.transform(oppositePoint, transformedOpposite);
+    }
+
+    private void calculateAnchorPoints() {
+        double minX = originalBounds.getMinX();
+        double minY = originalBounds.getMinY();
+        double maxX = originalBounds.getMaxX();
+        double maxY = originalBounds.getMaxY();
+        double midX = originalBounds.getCenterX();
+        double midY = originalBounds.getCenterY();
+
+        switch (anchor) {
+            case eNW: anchorPoint.setLocation(minX, minY); oppositePoint.setLocation(maxX, maxY); break;
+            case eNN: anchorPoint.setLocation(midX, minY); oppositePoint.setLocation(midX, maxY); break;
+            case eNE: anchorPoint.setLocation(maxX, minY); oppositePoint.setLocation(minX, maxY); break;
+            case eWW: anchorPoint.setLocation(minX, midY); oppositePoint.setLocation(maxX, midY); break;
+            case eEE: anchorPoint.setLocation(maxX, midY); oppositePoint.setLocation(minX, midY); break;
+            case eSW: anchorPoint.setLocation(minX, maxY); oppositePoint.setLocation(maxX, minY); break;
+            case eSS: anchorPoint.setLocation(midX, maxY); oppositePoint.setLocation(midX, minY); break;
+            case eSE: anchorPoint.setLocation(maxX, maxY); oppositePoint.setLocation(minX, minY); break;
+            default: break;
         }
     }
 
     @Override
     public void drag(int x, int y) {
-        if (this.selectedAnchor == null || this.initialTransformAtStart == null || this.initialTransformedBounds == null) {
+        if (anchor == null || anchor == EAnchor.eMM || anchor == EAnchor.eRR) {
             return;
         }
 
-        // 현재 마우스 위치
-        Point2D.Double currentPoint = new Point2D.Double(x, y);
+        Point2D.Double mouseScreen = new Point2D.Double(x, y);
+        Point2D.Double mouseLocal;
 
-        // 초기 변환의 역변환으로 로컬 좌표계로 변환
-        AffineTransform inverseTransform;
         try {
-            inverseTransform = initialTransformAtStart.createInverse();
+            mouseLocal = (Point2D.Double) originalTransform.inverseTransform(mouseScreen, null);
         } catch (Exception e) {
-            return; // 역변환이 불가능한 경우
+            return;
         }
 
-        Point2D.Double localPivot = new Point2D.Double();
-        Point2D.Double localCurrent = new Point2D.Double();
-        inverseTransform.transform(this.worldPivotPoint, localPivot);
-        inverseTransform.transform(currentPoint, localCurrent);
+        double origVectorX = anchorPoint.x - oppositePoint.x;
+        double origVectorY = anchorPoint.y - oppositePoint.y;
+        double currentVectorX = mouseLocal.x - oppositePoint.x;
+        double currentVectorY = mouseLocal.y - oppositePoint.y;
 
-        // GShape의 keepResize 로직을 참고하여 스케일링 비율 계산
-        double minX = initialTransformedBounds.getMinX();
-        double minY = initialTransformedBounds.getMinY();
-        double maxX = initialTransformedBounds.getMaxX();
-        double maxY = initialTransformedBounds.getMaxY();
-        double width = maxX - minX;
-        double height = maxY - minY;
+        double finalTotalScaleX;
+        double finalTotalScaleY;
 
-        double scaleX = 1.0;
-        double scaleY = 1.0;
+        double targetMagnitudeX = initialScaleXMagnitude;
+        double targetMagnitudeY = initialScaleYMagnitude;
 
-        // 앵커에 따라 스케일링 비율 계산 (GShape의 keepResize 방식 반영)
-        switch (this.selectedAnchor) {
-            case eNW:
-                scaleX = Math.abs(maxX - x) / Math.abs(maxX - minX);
-                scaleY = Math.abs(maxY - y) / Math.abs(maxY - minY);
-                break;
-            case eNN:
-                scaleX = 1.0;
-                scaleY = Math.abs(maxY - y) / Math.abs(maxY - minY);
-                break;
-            case eNE:
-                scaleX = Math.abs(x - minX) / Math.abs(maxX - minX);
-                scaleY = Math.abs(maxY - y) / Math.abs(maxY - minY);
-                break;
-            case eEE:
-                scaleX = Math.abs(x - minX) / Math.abs(maxX - minX);
-                scaleY = 1.0;
-                break;
-            case eSE:
-                scaleX = Math.abs(x - minX) / Math.abs(maxX - minX);
-                scaleY = Math.abs(y - minY) / Math.abs(maxY - minY);
-                break;
-            case eSS:
-                scaleX = 1.0;
-                scaleY = Math.abs(y - minY) / Math.abs(maxY - minY);
-                break;
-            case eSW:
-                scaleX = Math.abs(maxX - x) / Math.abs(maxX - minX);
-                scaleY = Math.abs(y - minY) / Math.abs(maxY - minY);
-                break;
-            case eWW:
-                scaleX = Math.abs(maxX - x) / Math.abs(maxX - minX);
-                scaleY = 1.0;
-                break;
-            default:
-                return;
+        if (anchor == EAnchor.eWW || anchor == EAnchor.eEE ||
+                anchor == EAnchor.eNW || anchor == EAnchor.eNE ||
+                anchor == EAnchor.eSW || anchor == EAnchor.eSE) {
+            if (Math.abs(origVectorX) > EPSILON) {
+                targetMagnitudeX = Math.abs(currentVectorX / origVectorX) * initialScaleXMagnitude;
+            } else {
+                targetMagnitudeX = initialScaleXMagnitude;
+            }
         }
 
-        // 최소 스케일 제한
-        final double MIN_ABS_SCALE = 0.01;
-        if (Math.abs(scaleX) < MIN_ABS_SCALE) {
-            scaleX = MIN_ABS_SCALE * Math.signum(scaleX);
-        }
-        if (Math.abs(scaleY) < MIN_ABS_SCALE) {
-            scaleY = MIN_ABS_SCALE * Math.signum(scaleY);
+        if (anchor == EAnchor.eNN || anchor == EAnchor.eSS ||
+                anchor == EAnchor.eNW || anchor == EAnchor.eNE ||
+                anchor == EAnchor.eSW || anchor == EAnchor.eSE) {
+            if (Math.abs(origVectorY) > EPSILON) {
+                targetMagnitudeY = Math.abs(currentVectorY / origVectorY) * initialScaleYMagnitude;
+            } else {
+                targetMagnitudeY = initialScaleYMagnitude;
+            }
         }
 
-        // 새로운 변환 생성
-        AffineTransform newTransform = new AffineTransform();
-        // 1. 피벗점으로 이동
-        newTransform.translate(this.worldPivotPoint.getX(), this.worldPivotPoint.getY());
-        // 2. 초기 회전 역방향 적용 (로컬 좌표계로)
-        newTransform.rotate(-this.initialRotation);
-        // 3. 스케일링 적용
-        newTransform.scale(scaleX, scaleY);
-        // 4. 초기 회전 복원
-        newTransform.rotate(this.initialRotation);
-        // 5. 피벗점으로 되돌아감
-        newTransform.translate(-this.worldPivotPoint.getX(), -this.worldPivotPoint.getY());
-        // 6. 초기 변환 적용
-        newTransform.concatenate(this.initialTransformAtStart);
+        boolean currentFlipX = this.initialFlipX;
+        if (anchor == EAnchor.eWW || anchor == EAnchor.eEE ||
+                anchor == EAnchor.eNW || anchor == EAnchor.eNE ||
+                anchor == EAnchor.eSW || anchor == EAnchor.eSE) {
+            if (origVectorX * currentVectorX < 0 && Math.abs(origVectorX) > EPSILON) {
+                currentFlipX = !this.initialFlipX;
+            }
+        }
+        finalTotalScaleX = currentFlipX ? -targetMagnitudeX : targetMagnitudeX;
 
-        // 도형에 새로운 변환 적용
-        this.shape.getAffineTransform().setTransform(newTransform);
+        boolean currentFlipY = this.initialFlipY;
+        if (anchor == EAnchor.eNN || anchor == EAnchor.eSS ||
+                anchor == EAnchor.eNW || anchor == EAnchor.eNE ||
+                anchor == EAnchor.eSW || anchor == EAnchor.eSE) {
+            if (origVectorY * currentVectorY < 0 && Math.abs(origVectorY) > EPSILON) {
+                currentFlipY = !this.initialFlipY;
+            }
+        }
+        finalTotalScaleY = currentFlipY ? -targetMagnitudeY : targetMagnitudeY;
+
+        if (originalBounds.getWidth() > EPSILON && Math.abs(finalTotalScaleX * originalBounds.getWidth()) < MIN_SIZE && Math.abs(finalTotalScaleX) > EPSILON) {
+            finalTotalScaleX = (MIN_SIZE / originalBounds.getWidth()) * Math.signum(finalTotalScaleX);
+        }
+        if (originalBounds.getHeight() > EPSILON && Math.abs(finalTotalScaleY * originalBounds.getHeight()) < MIN_SIZE && Math.abs(finalTotalScaleY) > EPSILON) {
+            finalTotalScaleY = (MIN_SIZE / originalBounds.getHeight()) * Math.signum(finalTotalScaleY);
+        }
+
+        if (originalBounds.getWidth() < EPSILON && Math.abs(finalTotalScaleX) > 1000) finalTotalScaleX = Math.signum(finalTotalScaleX) * 1000;
+        if (originalBounds.getHeight() < EPSILON && Math.abs(finalTotalScaleY) > 1000) finalTotalScaleY = Math.signum(finalTotalScaleY) * 1000;
+
+        AffineTransform at = new AffineTransform();
+        at.translate(transformedOpposite.x, transformedOpposite.y);
+        at.rotate(this.rotationAngle);
+        at.scale(finalTotalScaleX, finalTotalScaleY);
+        at.translate(-oppositePoint.x, -oppositePoint.y);
+
+        shape.getAffineTransform().setTransform(at);
     }
 
     @Override
     public void finish(int x, int y) {
-        // 상태 초기화 (필요 시)
+        this.anchor = null;
     }
 
     @Override
     public void addPoint(int x, int y) {
-        // 사용되지 않음
     }
 }
