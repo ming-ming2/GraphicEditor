@@ -1,123 +1,107 @@
 package menus;
 
-import frames.GComponent;
 import frames.GDrawingPanel;
+import global.GConstants;
+import shapes.GShape;
 
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
-import java.io.File;
-
-import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.Vector;
 
-public class GFileMenu extends JMenu implements GComponent {
+import static global.GConstants.*;
+
+public class GFileMenu extends JMenu {
 	private static final long serialVersionUID = 1L;
-
-	private JMenuItem newMenuItem;
-	private JMenuItem openMenuItem;
-	private JMenuItem loadImageMenuItem;
-	private JMenuItem saveMenuItem;
-	private JMenuItem saveAsMenuItem;
-	private JMenuItem saveAsImageMenuItem;
-	private JMenuItem exitMenuItem;
-
 	private GDrawingPanel drawingPanel;
 
 	public GFileMenu() {
 		super("File");
-		this.createComponents();
-		this.setAttributes();
-		this.arrangeComponents();
-		this.addEventHandler();
+		ActionHandler actionHandler = new ActionHandler();
+		for(EFileMenuItem eFileMenuItem : EFileMenuItem.values()) {
+			JMenuItem menuItem = new JMenuItem(eFileMenuItem.getName());
+			menuItem.addActionListener(actionHandler);
+			menuItem.setActionCommand(eFileMenuItem.name());
+			this.add(menuItem);
+		}
 	}
 
-	@Override
-	public void createComponents() {
-		newMenuItem = new JMenuItem("New");
-		openMenuItem = new JMenuItem("Open");
-		loadImageMenuItem = new JMenuItem("Load Background Image");
-		saveMenuItem = new JMenuItem("Save");
-		saveAsMenuItem = new JMenuItem("Save As");
-		saveAsImageMenuItem = new JMenuItem("Export as Image");
-		exitMenuItem = new JMenuItem("Exit");
+	public void newPanel(){
+		System.out.println("new panel");
 	}
 
-	@Override
-	public void arrangeComponents() {
-		this.add(newMenuItem);
-		this.add(openMenuItem);
-		this.add(loadImageMenuItem);
-		this.add(new JSeparator());
-		this.add(saveMenuItem);
-		this.add(saveAsMenuItem);
-		this.add(saveAsImageMenuItem);
-		this.add(new JSeparator());
-		this.add(exitMenuItem);
+	public void open(){
+		System.out.println("open");
+		JFileChooser chooser = new JFileChooser();
+		chooser.setFileFilter(new FileNameExtensionFilter("Graphic Editor Files (*.ged)", "ged"));
+		if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+			File file = chooser.getSelectedFile();
+			try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
+				Vector<GShape> shapes = (Vector<GShape>) in.readObject();
+				this.drawingPanel.setShapes(shapes);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
 	}
 
-	@Override
-	public void setAttributes() {
-		Font menuFont = new Font("Dialog", Font.PLAIN, 12);
+	public void save(){
+		try {
+			JFileChooser chooser = new JFileChooser();
+			chooser.setFileFilter(new FileNameExtensionFilter("Graphic Editor Files (*.ged)", "ged"));
+			if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+				File file = chooser.getSelectedFile();
+				if (!file.getName().toLowerCase().endsWith(".ged")) {
+					file = new File(file.getPath() + ".ged");
+				}
+				ObjectOutputStream objectOutputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
+				objectOutputStream.writeObject(this.drawingPanel.getShapes());
+				objectOutputStream.close();
+			}
 
-		newMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
-		openMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
-		saveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
-		saveAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK));
-		exitMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
-
-		setMenuItemFont(newMenuItem, menuFont);
-		setMenuItemFont(openMenuItem, menuFont);
-		setMenuItemFont(loadImageMenuItem, menuFont);
-		setMenuItemFont(saveMenuItem, menuFont);
-		setMenuItemFont(saveAsMenuItem, menuFont);
-		setMenuItemFont(saveAsImageMenuItem, menuFont);
-		setMenuItemFont(exitMenuItem, menuFont);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	private void setMenuItemFont(JMenuItem item, Font font) {
-		item.setFont(font);
+	public void saveAs(){
+		System.out.println("saveAs");
 	}
 
-	@Override
-	public void addEventHandler() {
-		saveMenuItem.addActionListener(e -> {
-			// 저장 기능 추가 예정
-		});
-
-		saveAsMenuItem.addActionListener(e -> {
-			// 다른 이름으로 저장 기능 추가 예정
-		});
-
-		saveAsImageMenuItem.addActionListener(e -> {
-			// 이미지로 저장 기능 추가 예정
-		});
-
-		loadImageMenuItem.addActionListener(e -> {
-			// 이미지 로드 기능 추가 예정
-		});
-
-		openMenuItem.addActionListener(e -> {
-			// 열기 기능 추가 예정
-		});
-
-		newMenuItem.addActionListener(e -> {
-			// 새로 만들기 기능 추가 예정
-		});
-
-		exitMenuItem.addActionListener(e -> System.exit(0));
+	public void quit(){
+		System.out.println("quit");
 	}
 
-	@Override
-	public void initialize() {
+	public void print(){
+		System.out.println("print");
+	}
+
+	private void invokeMethod(String name){
+		try {
+			this.getClass().getMethod(name).invoke(this);
+		} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void initialize(){
+
 	}
 
 	public void associate(GDrawingPanel drawingPanel) {
 		this.drawingPanel = drawingPanel;
+	}
+
+	private class ActionHandler implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			EFileMenuItem eFileMenuItem = EFileMenuItem.valueOf(e.getActionCommand());
+			invokeMethod(eFileMenuItem.getMethodName());
+		}
 	}
 }

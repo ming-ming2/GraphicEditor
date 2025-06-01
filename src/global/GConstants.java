@@ -1,7 +1,10 @@
 package global;
 
-import shapes.*;
+import shapes.GPolygon;
+import shapes.GRectangle;
+import shapes.GShape;
 
+import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 
 public class GConstants {
@@ -11,41 +14,34 @@ public class GConstants {
     }
 
     public static enum EAnchor {
-        eNN(new java.awt.Cursor(java.awt.Cursor.N_RESIZE_CURSOR)),
-        eNE(new java.awt.Cursor(java.awt.Cursor.NE_RESIZE_CURSOR)),
-        eNW(new java.awt.Cursor(java.awt.Cursor.NW_RESIZE_CURSOR)),
-        eSS(new java.awt.Cursor(java.awt.Cursor.S_RESIZE_CURSOR)),
-        eSE(new java.awt.Cursor(java.awt.Cursor.SE_RESIZE_CURSOR)),
-        eSW(new java.awt.Cursor(java.awt.Cursor.SW_RESIZE_CURSOR)),
-        eEE(new java.awt.Cursor(java.awt.Cursor.E_RESIZE_CURSOR)),
-        eWW(new java.awt.Cursor(java.awt.Cursor.W_RESIZE_CURSOR)),
-        eRR(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)),
-        eMM(new java.awt.Cursor(java.awt.Cursor.MOVE_CURSOR));
-        private java.awt.Cursor cursor;
+        eNN(new Cursor(Cursor.N_RESIZE_CURSOR)),
+        eNE(new Cursor(Cursor.N_RESIZE_CURSOR)),
+        eNW(new Cursor(Cursor.N_RESIZE_CURSOR)),
+        eSS(new Cursor(Cursor.S_RESIZE_CURSOR)),
+        eSE(new Cursor(Cursor.S_RESIZE_CURSOR)),
+        eSW(new Cursor(Cursor.S_RESIZE_CURSOR)),
+        eEE(new Cursor(Cursor.E_RESIZE_CURSOR)),
+        eWW(new Cursor(Cursor.W_RESIZE_CURSOR)),
+        eRR(new Cursor(Cursor.HAND_CURSOR)),
+        eMM(new Cursor(Cursor.MOVE_CURSOR));
+        private Cursor cursor;
 
-        EAnchor(java.awt.Cursor cursor) {
+        EAnchor(Cursor cursor) {
             this.cursor = cursor;
         }
 
-        public java.awt.Cursor getCursor() {
+        public Cursor getCursor() {
             return this.cursor;
         }
+
     }
 
     public static enum EShapeTool {
         eSelect("select", GShape.EPoints.e2P, GRectangle.class),
         eRectangle("rectangle", GShape.EPoints.e2P, GRectangle.class),
-        eEllipse("ellipse", GShape.EPoints.e2P, GEllipse.class),
-        eLine("line", GShape.EPoints.e2P, GLine.class),
-        ePolygon("polygon", GShape.EPoints.eNP, GPolygon.class),
-        eRoundRectangle("round rectangle", GShape.EPoints.e2P, GRoundRectangle.class),
-        eArc("arc", GShape.EPoints.e2P, GArc.class),
-        eQuadCurve("quad curve", GShape.EPoints.eNP, GQuadCurve.class),
-        eCubicCurve("cubic curve", GShape.EPoints.eNP, GCubicCurve.class),
-        ePath("path", GShape.EPoints.eNP, GPath.class),
-        ePencil("pencil", GShape.EPoints.eNP, GPencil.class),
-        eText("text", GShape.EPoints.e2P, GText.class),
-        eStar("star", GShape.EPoints.e2P, GStar.class);
+        eEllipse("ellipse", GShape.EPoints.e2P, GRectangle.class),
+        eLine("line", GShape.EPoints.e2P, GRectangle.class),
+        ePolygon("polygon", GShape.EPoints.eNP, GPolygon.class);
 
         private String name;
         private GShape.EPoints ePoints;
@@ -72,4 +68,29 @@ public class GConstants {
             return null;
         }
     }
+
+    public enum EFileMenuItem {
+        eNew("새 파일", "newPanel"),
+        eOpen("열기", "open"),
+        eSave("저장", "save"),
+        eSaveAs("다른 이름으로 저장", "saveAs"),
+        ePrint("프린트", "print"),
+        eQuit("나가기","quit"),;
+
+        private final String name;
+        private final String methodName;
+
+        EFileMenuItem(String name, String methodName) {
+            this.name = name;
+            this.methodName = methodName;
+        }
+        public String getName(){
+            return name;
+        }
+
+        public String getMethodName(){
+            return methodName;
+        }
+    }
+
 }

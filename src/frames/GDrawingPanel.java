@@ -18,6 +18,8 @@ import transformers.*;
 public class GDrawingPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 
+
+
 	public enum EDrawingState {
 		eIdle,
 		e2P,
@@ -134,6 +136,14 @@ public class GDrawingPanel extends JPanel {
 		clearSelection();
 		this.currentShape.setSelected(true);
 	}
+	public Vector<GShape> getShapes() {
+		return this.shapes;
+	}
+
+	public void setShapes(Vector<GShape> shapes) {
+		this.shapes = shapes;
+	}
+
 
 	private void selectShapesInArea() {
 		Rectangle selectionArea = this.currentShape.getBounds().getBounds();
