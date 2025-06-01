@@ -8,11 +8,12 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.NoninvertibleTransformException;
+import java.io.Serializable;
 
 
 import static global.GConstants.*;
 
-public abstract class GShape {
+public abstract class GShape implements Serializable {
     private final static int ANCHOR_WIDTH = 10;
     private final static int ANCHOR_HEIGHT = 10;
     private final AffineTransform affineTransform;

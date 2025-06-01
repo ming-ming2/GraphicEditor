@@ -1,5 +1,6 @@
 package menus;
 
+import frames.GComponent;
 import frames.GDrawingPanel;
 import global.GConstants;
 import shapes.GShape;
@@ -15,12 +16,34 @@ import java.util.Vector;
 
 import static global.GConstants.*;
 
-public class GFileMenu extends JMenu {
+public class GFileMenu extends JMenu implements GComponent {
 	private static final long serialVersionUID = 1L;
 	private GDrawingPanel drawingPanel;
+	private File currentFile;
 
 	public GFileMenu() {
 		super("File");
+		this.currentFile = null;
+		addEventHandler();
+	}
+
+	@Override
+	public void createComponents() {
+		//
+	}
+
+	@Override
+	public void setAttributes() {
+		//
+	}
+
+	@Override
+	public void arrangeComponents() {
+		//
+	}
+
+	@Override
+	public void addEventHandler() {
 		ActionHandler actionHandler = new ActionHandler();
 		for(EFileMenuItem eFileMenuItem : EFileMenuItem.values()) {
 			JMenuItem menuItem = new JMenuItem(eFileMenuItem.getName());
@@ -31,11 +54,12 @@ public class GFileMenu extends JMenu {
 	}
 
 	public void newPanel(){
-		System.out.println("new panel");
+		this.currentFile = null;
+		this.drawingPanel.setShapes(new Vector<GShape>());
+		this.drawingPanel.repaint();
 	}
 
 	public void open(){
-		System.out.println("open");
 		JFileChooser chooser = new JFileChooser();
 		chooser.setFileFilter(new FileNameExtensionFilter("Graphic Editor Files (*.ged)", "ged"));
 		if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -43,38 +67,55 @@ public class GFileMenu extends JMenu {
 			try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
 				Vector<GShape> shapes = (Vector<GShape>) in.readObject();
 				this.drawingPanel.setShapes(shapes);
+				this.currentFile = file;
+				this.drawingPanel.repaint();
 			} catch (Exception e) {
-				e.printStackTrace();
+				JOptionPane.showMessageDialog(this, "파일을 열 수 없습니다: " + e.getMessage(), "오류", JOptionPane.ERROR_MESSAGE);
 			}
 		}
-
 	}
 
 	public void save(){
+		if (this.currentFile == null) {
+			saveAs();
+		} else {
+			saveToFile(this.currentFile);
+		}
+	}
+
+	public void saveAs(){
 		try {
 			JFileChooser chooser = new JFileChooser();
 			chooser.setFileFilter(new FileNameExtensionFilter("Graphic Editor Files (*.ged)", "ged"));
+			if (this.currentFile != null) {
+				chooser.setSelectedFile(this.currentFile);
+			}
 			if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
 				File file = chooser.getSelectedFile();
 				if (!file.getName().toLowerCase().endsWith(".ged")) {
 					file = new File(file.getPath() + ".ged");
 				}
-				ObjectOutputStream objectOutputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
-				objectOutputStream.writeObject(this.drawingPanel.getShapes());
-				objectOutputStream.close();
+				if (saveToFile(file)) {
+					this.currentFile = file;
+				}
 			}
-
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(this, "파일을 저장할 수 없습니다: " + e.getMessage(), "오류", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
-	public void saveAs(){
-		System.out.println("saveAs");
+	private boolean saveToFile(File file) {
+		try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
+			out.writeObject(this.drawingPanel.getShapes());
+			return true;
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(this, "파일을 저장할 수 없습니다: " + e.getMessage(), "오류", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
 	}
 
 	public void quit(){
-		System.out.println("quit");
+		System.exit(0);
 	}
 
 	public void print(){
@@ -90,7 +131,6 @@ public class GFileMenu extends JMenu {
 	}
 
 	public void initialize(){
-
 	}
 
 	public void associate(GDrawingPanel drawingPanel) {
