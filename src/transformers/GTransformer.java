@@ -15,4 +15,8 @@ public abstract class GTransformer {
    public abstract void drag(int x, int y);
    public abstract void finish(int x, int y);
    public abstract void addPoint(int x, int y);
+
+   public boolean isUpdated() {
+      return true;
+   }
 }

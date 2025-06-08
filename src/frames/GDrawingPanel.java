@@ -19,21 +19,21 @@ public class GDrawingPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 
-
 	public enum EDrawingState {
 		eIdle,
 		e2P,
-		eNP
-	}
+		eNP;
 
+	}
 	private Vector<GShape> shapes;
 	private GTransformer transformer;
+
 	private GShape currentShape;
 	private GShape selectedShape;
 	private EShapeTool eShapeTool;
 	private EDrawingState eDrawingState;
 	private boolean multiSelection;
-
+	private boolean bUpdated;
 	public GDrawingPanel() {
 		MouseHandler mouseHandler = new MouseHandler();
 		this.addMouseListener(mouseHandler);
@@ -45,12 +45,25 @@ public class GDrawingPanel extends JPanel {
 		this.eShapeTool = null;
 		this.eDrawingState = EDrawingState.eIdle;
 		this.multiSelection = false;
+		this.bUpdated = false;
+	}
+	public void initialize() {
+		this.shapes.clear();
+		this.selectedShape = null;
+		this.currentShape = null;
+		this.repaint();
+		this.removeAll();
 	}
 
-	public void initialize() {
-	}
 	public void setEShapeTool(EShapeTool eShapeTool) {
 		this.eShapeTool = eShapeTool;
+	}
+
+	public boolean isUpdated() {
+		return this.bUpdated;
+	}
+	public void setBUpdated(boolean bUpdated) {
+		this.bUpdated = bUpdated;
 	}
 
 	protected void paintComponent(Graphics graphics) {
@@ -128,7 +141,8 @@ public class GDrawingPanel extends JPanel {
 		} else {
 			this.selectShape();
 		}
-
+//		this.bUpdated = this.transformer.isUpdated();
+		this.bUpdated = true;
 		this.repaint();
 	}
 
@@ -142,6 +156,7 @@ public class GDrawingPanel extends JPanel {
 
 	public void setShapes(Vector<GShape> shapes) {
 		this.shapes = shapes;
+		this.repaint();
 	}
 
 

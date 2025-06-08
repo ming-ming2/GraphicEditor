@@ -2,7 +2,6 @@ package menus;
 
 import frames.GComponent;
 import frames.GDrawingPanel;
-import global.GConstants;
 import shapes.GShape;
 
 import javax.swing.*;
@@ -11,7 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.Vector;
 
 import static global.GConstants.*;
@@ -19,11 +17,11 @@ import static global.GConstants.*;
 public class GFileMenu extends JMenu implements GComponent {
 	private static final long serialVersionUID = 1L;
 	private GDrawingPanel drawingPanel;
-	private File currentFile;
+	private File file;
+	private File dir;
 
 	public GFileMenu() {
 		super("File");
-		this.currentFile = null;
 		addEventHandler();
 	}
 
@@ -54,49 +52,53 @@ public class GFileMenu extends JMenu implements GComponent {
 	}
 
 	public void newPanel(){
-		this.currentFile = null;
-		this.drawingPanel.setShapes(new Vector<GShape>());
-		this.drawingPanel.repaint();
+		if(this.close()) {
+			this.file = null;
+			this.drawingPanel.initialize();
+		}
 	}
 
 	public void open(){
+		if(this.drawingPanel.isUpdated()){
+			this.save();
+		}
 		JFileChooser chooser = new JFileChooser();
 		chooser.setFileFilter(new FileNameExtensionFilter("Graphic Editor Files (*.ged)", "ged"));
 		if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-			File file = chooser.getSelectedFile();
-			try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
-				Vector<GShape> shapes = (Vector<GShape>) in.readObject();
-				this.drawingPanel.setShapes(shapes);
-				this.currentFile = file;
-				this.drawingPanel.repaint();
+			File selectedFile = chooser.getSelectedFile();
+			try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(selectedFile))) {
+				this.drawingPanel.setShapes((Vector<GShape>) in.readObject());
+				this.file = selectedFile;
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(this, "파일을 열 수 없습니다: " + e.getMessage(), "오류", JOptionPane.ERROR_MESSAGE);
 			}
 		}
+
 	}
 
 	public void save(){
-		if (this.currentFile == null) {
+		if (this.file == null) {
 			saveAs();
 		} else {
-			saveToFile(this.currentFile);
+			saveToFile(this.file);
 		}
 	}
 
 	public void saveAs(){
 		try {
-			JFileChooser chooser = new JFileChooser();
+			JFileChooser chooser = new JFileChooser(this.dir);
 			chooser.setFileFilter(new FileNameExtensionFilter("Graphic Editor Files (*.ged)", "ged"));
-			if (this.currentFile != null) {
-				chooser.setSelectedFile(this.currentFile);
+			if (this.file != null) {
+				chooser.setSelectedFile(this.file);
 			}
 			if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-				File file = chooser.getSelectedFile();
-				if (!file.getName().toLowerCase().endsWith(".ged")) {
-					file = new File(file.getPath() + ".ged");
+				File selectedFile = chooser.getSelectedFile();
+				this.dir = chooser.getCurrentDirectory();
+				if (!selectedFile.getName().toLowerCase().endsWith(".ged")) {
+					selectedFile = new File(selectedFile.getPath() + ".ged");
 				}
-				if (saveToFile(file)) {
-					this.currentFile = file;
+				if (saveToFile(selectedFile)) {
+					this.file = selectedFile;
 				}
 			}
 		} catch (Exception e) {
@@ -105,13 +107,35 @@ public class GFileMenu extends JMenu implements GComponent {
 	}
 
 	private boolean saveToFile(File file) {
-		try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
+		try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(this.file)))) {
 			out.writeObject(this.drawingPanel.getShapes());
+			this.drawingPanel.setBUpdated(false);
 			return true;
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this, "파일을 저장할 수 없습니다: " + e.getMessage(), "오류", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
+	}
+
+	public boolean close(){
+		boolean bCancel = false;
+		if(this.drawingPanel.isUpdated()) {
+			int reply = JOptionPane.NO_OPTION;
+			reply = JOptionPane.showConfirmDialog(this.drawingPanel,"변경 내용을 저장할까요?");
+			if(reply == JOptionPane.CANCEL_OPTION) {
+				bCancel = true;
+			}
+			if(reply == JOptionPane.YES_OPTION) {
+				this.save();
+			} else if(reply == JOptionPane.NO_OPTION) {
+
+			} else if(reply == JOptionPane.CANCEL_OPTION) {
+				bCancel = true;
+			}
+		} else {
+			this.quit();
+		}
+		return !bCancel;
 	}
 
 	public void quit(){
@@ -131,6 +155,8 @@ public class GFileMenu extends JMenu implements GComponent {
 	}
 
 	public void initialize(){
+		this.dir = new File("/Users/abcd/IdeaProjects/GraphicEditor_project");
+		this.file = null;
 	}
 
 	public void associate(GDrawingPanel drawingPanel) {

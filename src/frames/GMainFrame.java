@@ -3,9 +3,11 @@ package frames;
 import global.GConstants;
 
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.Serial;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 
 import static global.GConstants.GMainFrame.WIDTH;
 
@@ -48,6 +50,28 @@ public class GMainFrame extends JFrame implements GComponent {
 
 	@Override
 	public void addEventHandler() {
+
+		this.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				if(!GMainFrame.this.drawingPanel.isUpdated()){
+					System.exit(0);
+				}
+				int option = JOptionPane.showConfirmDialog(
+						GMainFrame.this,
+						"정말로 종료하시겠습니까?", // 메시지
+						"종료 확인", // 다이얼로그 제목
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.QUESTION_MESSAGE
+				);
+
+				if (option == JOptionPane.YES_OPTION) {
+					System.exit(0);
+				} else {
+					//
+				}
+			}
+		});
 		//
 	}
 
