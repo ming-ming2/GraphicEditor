@@ -120,19 +120,17 @@ public class GFileMenu extends JMenu implements GComponent {
 	public boolean close(){
 		boolean bCancel = false;
 		if(this.drawingPanel.isUpdated()) {
-			int reply = JOptionPane.NO_OPTION;
-			reply = JOptionPane.showConfirmDialog(this.drawingPanel,"변경 내용을 저장할까요?");
-			if(reply == JOptionPane.CANCEL_OPTION) {
-				bCancel = true;
-			}
+			int reply = JOptionPane.showConfirmDialog(this.drawingPanel,"변경 내용을 저장할까요?");
 			if(reply == JOptionPane.YES_OPTION) {
 				this.save();
 			} else if(reply == JOptionPane.NO_OPTION) {
-
+				//
 			} else if(reply == JOptionPane.CANCEL_OPTION) {
 				bCancel = true;
 			}
-		} else {
+		}
+
+		if(!bCancel) {
 			this.quit();
 		}
 		return !bCancel;

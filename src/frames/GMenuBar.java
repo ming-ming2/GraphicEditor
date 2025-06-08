@@ -81,4 +81,8 @@ public class GMenuBar extends JMenuBar implements GComponent {
 		viewMenu.associate(drawingPanel);
 		graphicMenu.associate(drawingPanel);
 	}
+
+	public GFileMenu getFileMenu() {
+		return fileMenu;
+	}
 }

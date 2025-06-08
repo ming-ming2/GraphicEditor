@@ -161,11 +161,10 @@ public class GDrawingPanel extends JPanel {
 
 
 	private void selectShapesInArea() {
-		Rectangle selectionArea = this.currentShape.getBounds().getBounds();
-
+		Rectangle selectionArea = this.currentShape.getTransformedShape().getBounds();
 		for (GShape shape : this.shapes) {
 			if (shape != this.currentShape) {
-				if (selectionArea.contains(shape.getBounds().getBounds())) {
+				if (selectionArea.contains(shape.getTransformedShape().getBounds())) {
 					shape.setSelected(true);
 				}
 			}

@@ -10,7 +10,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.NoninvertibleTransformException;
 import java.io.Serializable;
 
-
 import static global.GConstants.*;
 
 public abstract class GShape implements Serializable {
@@ -77,23 +76,27 @@ public abstract class GShape implements Serializable {
         double bw = bounds.getWidth();
         double bh = bounds.getHeight();
 
-        Point2D.Double anchorCenterPos = new Point2D.Double();
+        Point2D.Double anchorLocalPos = new Point2D.Double();
+        Point2D.Double anchorScreenPos = new Point2D.Double();
 
         for (int i = 0; i < this.anchors.length; i++) {
             switch (EAnchor.values()[i]) {
-                case eNN: anchorCenterPos.setLocation(bx + bw / 2, by); break;
-                case eNE: anchorCenterPos.setLocation(bx + bw, by); break;
-                case eNW: anchorCenterPos.setLocation(bx, by); break;
-                case eSS: anchorCenterPos.setLocation(bx + bw / 2, by + bh); break;
-                case eSE: anchorCenterPos.setLocation(bx + bw, by + bh); break;
-                case eSW: anchorCenterPos.setLocation(bx, by + bh); break;
-                case eEE: anchorCenterPos.setLocation(bx + bw, by + bh / 2); break;
-                case eWW: anchorCenterPos.setLocation(bx, by + bh / 2); break;
-                case eRR: anchorCenterPos.setLocation(bx + bw / 2, by - 30); break;
+                case eNN: anchorLocalPos.setLocation(bx + bw / 2, by); break;
+                case eNE: anchorLocalPos.setLocation(bx + bw, by); break;
+                case eNW: anchorLocalPos.setLocation(bx, by); break;
+                case eSS: anchorLocalPos.setLocation(bx + bw / 2, by + bh); break;
+                case eSE: anchorLocalPos.setLocation(bx + bw, by + bh); break;
+                case eSW: anchorLocalPos.setLocation(bx, by + bh); break;
+                case eEE: anchorLocalPos.setLocation(bx + bw, by + bh / 2); break;
+                case eWW: anchorLocalPos.setLocation(bx, by + bh / 2); break;
+                case eRR: anchorLocalPos.setLocation(bx + bw / 2, by - 30); break;
             }
+
+            this.affineTransform.transform(anchorLocalPos, anchorScreenPos);
+
             this.anchors[i].setFrame(
-                    anchorCenterPos.x - (double) ANCHOR_WIDTH / 2,
-                    anchorCenterPos.y - (double) ANCHOR_HEIGHT / 2,
+                    anchorScreenPos.x - (double) ANCHOR_WIDTH / 2,
+                    anchorScreenPos.y - (double) ANCHOR_HEIGHT / 2,
                     ANCHOR_WIDTH,
                     ANCHOR_HEIGHT
             );
@@ -105,79 +108,45 @@ public abstract class GShape implements Serializable {
         graphics2D.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         graphics2D.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
-        Shape transformedShape = this.affineTransform.createTransformedShape(this.shape);
+        Shape transformedShape = this.getTransformedShape();
         graphics2D.draw(transformedShape);
 
         if (bSelected) {
             this.setAnchors();
 
             for (int i = 0; i < this.anchors.length; i++) {
-                AffineTransform anchorTransform = new AffineTransform();
-                try {
-                    Point2D.Double anchorLocalCenter = new Point2D.Double(this.anchors[i].getCenterX(), this.anchors[i].getCenterY());
-                    Point2D.Double anchorScreenCenter = new Point2D.Double();
-                    this.affineTransform.transform(anchorLocalCenter, anchorScreenCenter);
-
-                    anchorTransform.setToTranslation(anchorScreenCenter.getX(), anchorScreenCenter.getY());
-
-                    Shape fixedSizeAnchorShape = new Ellipse2D.Double(
-                            -(double)ANCHOR_WIDTH / 2,
-                            -(double)ANCHOR_HEIGHT / 2,
-                            ANCHOR_WIDTH,
-                            ANCHOR_HEIGHT
-                    );
-                    Shape finalAnchorShape = anchorTransform.createTransformedShape(fixedSizeAnchorShape);
-
-                    Color penColor = graphics2D.getColor();
-                    graphics2D.setColor(graphics2D.getBackground());
-                    graphics2D.fill(finalAnchorShape);
-                    graphics2D.setColor(penColor);
-                    graphics2D.draw(finalAnchorShape);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                Color penColor = graphics2D.getColor();
+                graphics2D.setColor(graphics2D.getBackground());
+                graphics2D.fill(this.anchors[i]);
+                graphics2D.setColor(penColor);
+                graphics2D.draw(this.anchors[i]);
             }
         }
     }
-
-
-
 
     public boolean contains(int x, int y) {
         if (bSelected) {
             this.setAnchors();
             for (int i = 0; i < this.anchors.length; i++) {
-                Point2D.Double anchorLocalCenter = new Point2D.Double(this.anchors[i].getCenterX(), this.anchors[i].getCenterY());
-                Point2D.Double anchorScreenCenter = new Point2D.Double();
-                this.affineTransform.transform(anchorLocalCenter, anchorScreenCenter);
-
-                Rectangle2D.Double anchorBoundsOnScreen = new Rectangle2D.Double(
-                        anchorScreenCenter.getX() - (double) ANCHOR_WIDTH / 2,
-                        anchorScreenCenter.getY() - (double) ANCHOR_HEIGHT / 2,
-                        ANCHOR_WIDTH,
-                        ANCHOR_HEIGHT
-                );
-
-                if (anchorBoundsOnScreen.contains(x, y)) {
+                if (this.anchors[i].contains(x, y)) {
                     this.eSelectedAnchor = EAnchor.values()[i];
                     return true;
                 }
             }
         }
 
-        Shape transformedShape = this.affineTransform.createTransformedShape(shape);
+        Shape transformedShape = this.getTransformedShape();
         if (transformedShape.contains(x, y)) {
             this.eSelectedAnchor = EAnchor.eMM;
             return true;
         }
+
         return false;
     }
 
     public AffineTransform getAffineTransform() {
         return this.affineTransform;
     }
-
 
     public abstract void addPoint(int x, int y);
     public abstract void setPoint(int x, int y);

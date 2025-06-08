@@ -17,11 +17,12 @@ public class GMainFrame extends JFrame implements GComponent {
 	private GMenuBar menuBar;
 	private GShapeToolBar toolBar;
 	private GDrawingPanel drawingPanel;
-	
+
 	public GMainFrame(){
 		this.setAttributes();
 		this.createComponents();
 		this.arrangeComponents();
+		this.addEventHandler();
 	}
 
 	@Override
@@ -37,9 +38,8 @@ public class GMainFrame extends JFrame implements GComponent {
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setSize(GConstants.GMainFrame.WIDTH, GConstants.GMainFrame.HEIGHT);
 		this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.setLayout(new BorderLayout());
-
 	}
 
 	@Override
@@ -50,37 +50,49 @@ public class GMainFrame extends JFrame implements GComponent {
 
 	@Override
 	public void addEventHandler() {
-
 		this.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				if(!GMainFrame.this.drawingPanel.isUpdated()){
-					System.exit(0);
-				}
-				int option = JOptionPane.showConfirmDialog(
-						GMainFrame.this,
-						"정말로 종료하시겠습니까?", // 메시지
-						"종료 확인", // 다이얼로그 제목
-						JOptionPane.YES_NO_OPTION,
-						JOptionPane.QUESTION_MESSAGE
-				);
-
-				if (option == JOptionPane.YES_OPTION) {
-					System.exit(0);
-				} else {
-					//
-				}
+				quit();
 			}
 		});
-		//
+	}
+
+	private void quit() {
+		if(this.drawingPanel.isUpdated()) {
+			int option = JOptionPane.showConfirmDialog(
+					this,
+					"변경된 내용이 있습니다. 저장하시겠습니까?",
+					"종료 확인",
+					JOptionPane.YES_NO_CANCEL_OPTION,
+					JOptionPane.QUESTION_MESSAGE
+			);
+
+			if (option == JOptionPane.YES_OPTION) {
+				this.menuBar.getFileMenu().save();
+				System.exit(0);
+			} else if (option == JOptionPane.NO_OPTION) {
+				System.exit(0);
+			}
+		} else {
+			int option = JOptionPane.showConfirmDialog(
+					this,
+					"정말로 종료하시겠습니까?",
+					"종료 확인",
+					JOptionPane.YES_NO_OPTION,
+					JOptionPane.QUESTION_MESSAGE
+			);
+
+			if (option == JOptionPane.YES_OPTION) {
+				System.exit(0);
+			}
+		}
 	}
 
 	public void initialize() {
-		//associate
 		this.menuBar.associate(this.drawingPanel);
 		this.toolBar.associate(this.drawingPanel);
 
-		//associated attributes
 		this.setVisible(true);
 		this.menuBar.initialize();
 		this.toolBar.initialize();
