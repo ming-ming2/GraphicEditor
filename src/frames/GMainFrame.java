@@ -9,7 +9,6 @@ import java.io.Serial;
 
 import javax.swing.*;
 
-import static global.GConstants.GMainFrame.WIDTH;
 
 public class GMainFrame extends JFrame implements GComponent {
 	@Serial
@@ -36,7 +35,7 @@ public class GMainFrame extends JFrame implements GComponent {
 	@Override
 	public void setAttributes() {
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-		this.setSize(GConstants.GMainFrame.WIDTH, GConstants.GMainFrame.HEIGHT);
+		this.setSize(GConstants.EMainFrame.eW.getValues(), GConstants.EMainFrame.eH.getValues());
 		this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.setLayout(new BorderLayout());
