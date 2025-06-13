@@ -1,43 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <GConstants>
-    <EMainFrame eW = "1200" eH = "800" />
-    <EMenu>
-        <eFileMenu label = "파일"/>
-        <eEditMenu label = "편집"/>
-        <eGraphicsMenu label = "그래픽속성"/>
-    </EMenu>
-    <EFileMenuItem  defaultPathName = "/Users/abcd/IdeaProjects/GraphicEditor_project" >
-        <eNew label = "new" toolTipText = "새로운 파일을 생성" />
-        <eOpen label = "열기" toolTipText = "기존 파일 열기" />
-        <eSave label = "저장" toolTipText = "현재 파일을 저장" />
-        <eSaveAs label = "다른이름으로" toolTipText = "다른 이름으로 저장" />
-        <eClose label = "닫기" toolTipText = "현재 파일 닫기" />
-        <ePrint label = "프린트" toolTipText = "현재 파일을 프린트" />
-        <eExit label = "종료" toolTipText = "그래픽 에디터 종료" />
-    </EFileMenuItem >
-    <EEditMenuItem >
-        <eReDo label = "다시실행" toolTipText = "최근 커맨드 취소" />
-        <eUnDo label = "되돌리기" toolTipText = "다시실행 취소" />
-        <eCut label = "오려두기" toolTipText = "새로운 파일을 생성" />
-        <eCopy label = "복사" toolTipText = "새로운 파일을 생성" />
-        <ePaste label = "붙이기" toolTipText = "새로운 파일을 생성" />
-        <eDelete label = "지우기" toolTipText = "새로운 파일을 생성" />
-        <eGroup label = "그룹" toolTipText = "새로운 파일을 생성" />
-        <eUnGroup label = "그룹해제" toolTipText = "새로운 파일을 생성" />
-    </EEditMenuItem >
-    <EGraphicsMenuItem >
-        <eFontStyle label = "글자모양" toolTipText = "새로운 파일을 생성" />
-        <elineStyle label = "라인모양" toolTipText = "새로운 파일을 생성" />
-        <eLineColor label = "라인색" toolTipText = "새로운 파일을 생성" />
-        <eFillColor label = "채우기색" toolTipText = "새로운 파일을 생성" />
-    </EGraphicsMenuItem >
-<!--    <EToolBarButton pathName = "rsc">-->
-<!--        <eSelect label = "선택도구" toolTipText = "새로운 파일을 생성" imageFileName = "select"/>-->
-<!--        <eRectangle label = "네모도구" toolTipText = "새로운 파일을 생성" imageFileName = "rectangle"/>-->
-<!--        <eEllipse label = "원도구" toolTipText = "새로운 파일을 생성" imageFileName = "ellipse"/>-->
-<!--        <eEllipse label = "원도구" toolTipText = "새로운 파일을 생성" imageFileName = "ellipse"/>-->
-<!--        <eLine label = "라인도구" toolTipText = "새로운 파일을 생성" imageFileName = "line"/>-->
-<!--        <ePolygon label = "다각형도구" toolTipText = "새로운 파일을 생성" imageFileName = "polygon"/>-->
-<!--        <eTextArea label = "텍스트박스" toolTipText = "새로운 파일을 생성" imageFileName = "textArea"/>-->
-<!--    </EToolBarButton>-->
+    <EMainFrame eX="100" eY="100" eW="1200" eH="800" />
+
+    <EFileMenuItem defaultPathName="/Users/abcd/IdeaProjects/GraphicEditor_project">
+        <eNew label="새 파일" toolTipText="새로운 파일을 생성합니다" />
+        <eOpen label="열기" toolTipText="기존 파일을 엽니다" />
+        <eSave label="저장" toolTipText="현재 파일을 저장합니다" />
+        <eSaveAs label="다른 이름으로 저장" toolTipText="다른 이름으로 저장합니다" />
+        <ePrint label="프린트" toolTipText="현재 파일을 프린트합니다" />
+        <eClose label="닫기" toolTipText="현재 파일을 닫습니다" />
+        <eQuit label="나가기" toolTipText="그래픽 에디터를 종료합니다" />
+    </EFileMenuItem>
+
+    <EEditMenuItem>
+        <eUndo label="되돌리기" toolTipText="이전 작업을 취소합니다" />
+        <eRedo label="다시실행" toolTipText="취소된 작업을 다시 실행합니다" />
+        <eCut label="오려두기" toolTipText="선택된 객체를 잘라냅니다" />
+        <eCopy label="복사" toolTipText="선택된 객체를 복사합니다" />
+        <ePaste label="붙이기" toolTipText="복사된 객체를 붙여넣습니다" />
+        <eDelete label="지우기" toolTipText="선택된 객체를 삭제합니다" />
+        <eGroup label="그룹" toolTipText="선택된 객체들을 그룹화합니다" />
+        <eUnGroup label="그룹해제" toolTipText="그룹을 해제합니다" />
+    </EEditMenuItem>
+
+    <EGraphicsMenuItem>
+        <eFontStyle label="글자모양" toolTipText="텍스트의 글자 모양을 설정합니다" />
+        <eLineStyle label="라인모양" toolTipText="선의 스타일을 설정합니다" />
+        <eLineColor label="라인색" toolTipText="선의 색상을 설정합니다" />
+        <eFillColor label="채우기색" toolTipText="도형의 채우기 색상을 설정합니다" />
+    </EGraphicsMenuItem>
+
+    <EShapeTool>
+        <eSelect label="선택 도구" toolTipText="객체를 선택하고 조작합니다" />
+        <eRectangle label="사각형" toolTipText="사각형을 그립니다" />
+        <eEllipse label="타원" toolTipText="타원을 그립니다" />
+        <eLine label="직선" toolTipText="직선을 그립니다" />
+        <ePolygon label="다각형" toolTipText="다각형을 그립니다" />
+        <eText label="텍스트" toolTipText="텍스트를 입력합니다" />
+    </EShapeTool>
 </GConstants>

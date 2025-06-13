@@ -34,9 +34,16 @@ public class GMainFrame extends JFrame implements GComponent {
 
 	@Override
 	public void setAttributes() {
-		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setSize(GConstants.EMainFrame.eW.getValues(), GConstants.EMainFrame.eH.getValues());
-		this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
+		int x = GConstants.EMainFrame.eX.getValues();
+		int y = GConstants.EMainFrame.eY.getValues();
+		if (x == 0 && y == 0) {
+			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+			this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
+		} else {
+			this.setLocation(x, y);
+		}
+
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.setLayout(new BorderLayout());
 	}
