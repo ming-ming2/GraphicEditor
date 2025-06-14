@@ -2,33 +2,36 @@ package frames;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.InvocationTargetException;
-
 import javax.swing.ButtonGroup;
 import javax.swing.JRadioButton;
 import javax.swing.JToolBar;
-
 import global.GConstants;
-import global.GConstants.EShapeTool;
-import shapes.GPolygon;
-import shapes.GRectangle;
-import shapes.GShape;
-import shapes.GShape.EPoints;
 
 public class GShapeToolBar extends JToolBar implements GComponent {
 	private static final long serialVersionUID = 1L;
 
-
-	// associations
 	private GDrawingPanel drawingPanel;
 
 	public GShapeToolBar() {
+		this.createComponents();
+		this.setAttributes();
+		this.arrangeComponents();
+		this.addEventHandler();
+	}
+
+	@Override
+	public void createComponents() {
 		ButtonGroup buttonGroup = new ButtonGroup();
-		for (EShapeTool eShpaeType: EShapeTool.values()) {
-			JRadioButton radioButton = new JRadioButton(eShpaeType.getName());
-			ActionHandler actionHandler = new ActionHandler();
+		ActionHandler actionHandler = new ActionHandler();
+
+		for (GConstants.EShapeTool eShapeTool : GConstants.EShapeTool.values()) {
+			JRadioButton radioButton = new JRadioButton(eShapeTool.getName());
 			radioButton.addActionListener(actionHandler);
-			radioButton.setActionCommand(eShpaeType.toString());
+			radioButton.setActionCommand(eShapeTool.toString());
+
+			if (eShapeTool.getName() != null && !eShapeTool.getName().isEmpty()) {
+				radioButton.setToolTipText(eShapeTool.getName());
+			}
 
 			buttonGroup.add(radioButton);
 			this.add(radioButton);
@@ -36,27 +39,20 @@ public class GShapeToolBar extends JToolBar implements GComponent {
 	}
 
 	@Override
-	public void createComponents() {
-
-	}
-
-	@Override
 	public void setAttributes() {
-
 	}
 
 	@Override
 	public void arrangeComponents() {
-
 	}
 
 	@Override
 	public void addEventHandler() {
-
 	}
 
+	@Override
 	public void initialize() {
-		JRadioButton button = (JRadioButton) this.getComponent(EShapeTool.eSelect.ordinal());
+		JRadioButton button = (JRadioButton) this.getComponent(GConstants.EShapeTool.eSelect.ordinal());
 		button.doClick();
 	}
 

@@ -4,6 +4,7 @@ import java.awt.geom.Ellipse2D;
 
 public class GEllipse extends GShape {
     private Ellipse2D ellipse;
+    private int startX, startY;
 
     public GEllipse() {
         super(new Ellipse2D.Float(0, 0, 0, 0));
@@ -12,16 +13,18 @@ public class GEllipse extends GShape {
 
     @Override
     public void setPoint(int x, int y) {
+        this.startX = x;
+        this.startY = y;
         this.ellipse.setFrame(x, y, 0, 0);
     }
 
     @Override
     public void dragPoint(int x, int y) {
-        double ox = ellipse.getX();
-        double oy = ellipse.getY();
-        double w = x - ox;
-        double h = y - oy;
-        this.ellipse.setFrame(ox, oy, w, h);
+        double minX = Math.min(startX, x);
+        double minY = Math.min(startY, y);
+        double width = Math.abs(x - startX);
+        double height = Math.abs(y - startY);
+        this.ellipse.setFrame(minX, minY, width, height);
     }
 
     @Override

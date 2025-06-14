@@ -1,9 +1,7 @@
 package frames;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.util.Vector;
 
 import javax.swing.JPanel;
@@ -12,32 +10,37 @@ import global.GConstants;
 import global.GConstants.EShapeTool;
 import global.GConstants.EAnchor;
 import shapes.GShape;
+import shapes.GTextBox;
 import shapes.GShape.EPoints;
 import transformers.*;
 
 public class GDrawingPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 
-
 	public enum EDrawingState {
 		eIdle,
 		e2P,
 		eNP;
-
 	}
+
 	private Vector<GShape> shapes;
 	private GTransformer transformer;
-
 	private GShape currentShape;
 	private GShape selectedShape;
 	private EShapeTool eShapeTool;
 	private EDrawingState eDrawingState;
 	private boolean multiSelection;
 	private boolean bUpdated;
+	private GTextBox editingTextBox;
+
 	public GDrawingPanel() {
 		MouseHandler mouseHandler = new MouseHandler();
 		this.addMouseListener(mouseHandler);
 		this.addMouseMotionListener(mouseHandler);
+
+		KeyHandler keyHandler = new KeyHandler();
+		this.addKeyListener(keyHandler);
+		this.setFocusable(true);
 
 		this.currentShape = null;
 		this.selectedShape = null;
@@ -46,22 +49,27 @@ public class GDrawingPanel extends JPanel {
 		this.eDrawingState = EDrawingState.eIdle;
 		this.multiSelection = false;
 		this.bUpdated = false;
+		this.editingTextBox = null;
 	}
+
 	public void initialize() {
 		this.shapes.clear();
 		this.selectedShape = null;
 		this.currentShape = null;
+		this.editingTextBox = null;
 		this.repaint();
 		this.removeAll();
 	}
 
 	public void setEShapeTool(EShapeTool eShapeTool) {
 		this.eShapeTool = eShapeTool;
+		stopTextEditing();
 	}
 
 	public boolean isUpdated() {
 		return this.bUpdated;
 	}
+
 	public void setBUpdated(boolean bUpdated) {
 		this.bUpdated = bUpdated;
 	}
@@ -70,6 +78,10 @@ public class GDrawingPanel extends JPanel {
 		super.paintComponent(graphics);
 		for (GShape shape: this.shapes) {
 			shape.draw((Graphics2D)graphics);
+		}
+
+		if (editingTextBox != null && editingTextBox.isEditing()) {
+			repaint();
 		}
 	}
 
@@ -89,6 +101,14 @@ public class GDrawingPanel extends JPanel {
 		}
 	}
 
+	private void stopTextEditing() {
+		if (editingTextBox != null) {
+			editingTextBox.stopEditing();
+			editingTextBox.setSelected(false);
+			editingTextBox = null;
+		}
+	}
+
 	private void startTransform(int x, int y) {
 		this.currentShape = eShapeTool.newShape();
 		this.shapes.add(this.currentShape);
@@ -98,10 +118,18 @@ public class GDrawingPanel extends JPanel {
 			if (this.selectedShape == null) {
 				this.transformer = new GDrawer(this.currentShape);
 				clearSelection();
+				stopTextEditing();
 				multiSelection = true;
 			} else {
+				if (!(this.selectedShape instanceof GTextBox) || !((GTextBox)this.selectedShape).isEditing()) {
+					stopTextEditing();
+				}
+
 				if (!this.selectedShape.isSelected()) {
 					clearSelection();
+					if (!(this.selectedShape instanceof GTextBox) || !((GTextBox)this.selectedShape).isEditing()) {
+						stopTextEditing();
+					}
 					this.selectedShape.setSelected(true);
 				}
 
@@ -113,7 +141,11 @@ public class GDrawingPanel extends JPanel {
 					this.transformer = new GResizer(this.selectedShape);
 				}
 			}
+		} else if (this.eShapeTool == EShapeTool.eTextBox) {
+			stopTextEditing();
+			this.transformer = new GDrawer(this.currentShape);
 		} else {
+			stopTextEditing();
 			this.transformer = new GDrawer(this.currentShape);
 		}
 		this.transformer.start(x, y);
@@ -138,10 +170,14 @@ public class GDrawingPanel extends JPanel {
 				this.shapes.removeLast();
 				multiSelection = false;
 			}
+		} else if (this.eShapeTool == EShapeTool.eTextBox) {
+			this.selectShape();
+			this.editingTextBox = (GTextBox) this.currentShape;
+			this.editingTextBox.startEditing();
+			this.requestFocus();
 		} else {
 			this.selectShape();
 		}
-//		this.bUpdated = this.transformer.isUpdated();
 		this.bUpdated = true;
 		this.repaint();
 	}
@@ -150,15 +186,16 @@ public class GDrawingPanel extends JPanel {
 		clearSelection();
 		this.currentShape.setSelected(true);
 	}
+
 	public Vector<GShape> getShapes() {
 		return this.shapes;
 	}
 
 	public void setShapes(Vector<GShape> shapes) {
 		this.shapes = shapes;
+		this.editingTextBox = null;
 		this.repaint();
 	}
-
 
 	private void selectShapesInArea() {
 		Rectangle selectionArea = this.currentShape.getTransformedShape().getBounds();
@@ -225,11 +262,23 @@ public class GDrawingPanel extends JPanel {
 			if (eDrawingState == EDrawingState.eNP) {
 				finishTransform(e.getX(), e.getY());
 				eDrawingState = EDrawingState.eIdle;
+			} else if (eDrawingState == EDrawingState.eIdle && eShapeTool == EShapeTool.eSelect) {
+				GShape clickedShape = onShape(e.getX(), e.getY());
+				if (clickedShape instanceof GTextBox) {
+					stopTextEditing();
+					clearSelection();
+					clickedShape.setSelected(true);
+					editingTextBox = (GTextBox) clickedShape;
+					editingTextBox.startEditing();
+					requestFocus();
+					repaint();
+				}
 			}
 		}
 
 		@Override
 		public void mousePressed(MouseEvent e) {
+			requestFocus();
 		}
 
 		@Override
@@ -246,6 +295,59 @@ public class GDrawingPanel extends JPanel {
 
 		@Override
 		public void mouseExited(MouseEvent e) {
+		}
+	}
+
+	private class KeyHandler implements KeyListener {
+		@Override
+		public void keyTyped(KeyEvent e) {
+			if (editingTextBox != null) {
+				char c = e.getKeyChar();
+				if (c != KeyEvent.CHAR_UNDEFINED && c >= 32) {
+					editingTextBox.insertText(String.valueOf(c));
+					bUpdated = true;
+					repaint();
+				}
+			}
+		}
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			if (editingTextBox != null) {
+				switch (e.getKeyCode()) {
+					case KeyEvent.VK_ENTER:
+						if (e.isShiftDown()) {
+							editingTextBox.insertNewLine();
+							bUpdated = true;
+							repaint();
+						} else {
+							stopTextEditing();
+							repaint();
+						}
+						break;
+					case KeyEvent.VK_BACK_SPACE:
+						editingTextBox.deleteChar();
+						bUpdated = true;
+						repaint();
+						break;
+					case KeyEvent.VK_LEFT:
+						editingTextBox.moveCursor(-1);
+						repaint();
+						break;
+					case KeyEvent.VK_RIGHT:
+						editingTextBox.moveCursor(1);
+						repaint();
+						break;
+					case KeyEvent.VK_ESCAPE:
+						stopTextEditing();
+						repaint();
+						break;
+				}
+			}
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
 		}
 	}
 }

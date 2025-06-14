@@ -19,6 +19,8 @@ import javax.swing.KeyStroke;
 
 public final class GConstants {
 
+    public final static int TEXT_MARGIN = 5;
+
     public void readFromFile(String fileName) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -39,6 +41,8 @@ public final class GConstants {
                         EGraphicsMenuItem.setValues(node);
                     } else if (node.getNodeName().equals(EShapeTool.class.getSimpleName())) {
                         EShapeTool.setValues(node);
+                    } else if (node.getNodeName().equals(ETextConstants.class.getSimpleName())) {
+                        ETextConstants.setValues(node);
                     }
                 }
             }
@@ -79,7 +83,7 @@ public final class GConstants {
         eSW(new Cursor(Cursor.SW_RESIZE_CURSOR)),
         eEE(new Cursor(Cursor.E_RESIZE_CURSOR)),
         eWW(new Cursor(Cursor.W_RESIZE_CURSOR)),
-        eRR(new Cursor(Cursor.HAND_CURSOR)),
+        eRR(new Cursor(Cursor.CROSSHAIR_CURSOR)),
         eMM(new Cursor(Cursor.MOVE_CURSOR));
 
         private Cursor cursor;
@@ -93,13 +97,13 @@ public final class GConstants {
         }
     }
 
-    public static enum EShapeTool {
+    public enum EShapeTool {
         eSelect(null, GShape.EPoints.e2P, GRectangle.class),
         eRectangle(null, GShape.EPoints.e2P, GRectangle.class),
         eEllipse(null, GShape.EPoints.e2P, GEllipse.class),
         eLine(null, GShape.EPoints.e2P, GLine.class),
         ePolygon(null, GShape.EPoints.eNP, GPolygon.class),
-        eText(null, GShape.EPoints.e2P, GText.class);
+        eTextBox(null, GShape.EPoints.e2P, GTextBox.class);
 
         private String name;
         private GShape.EPoints ePoints;
@@ -274,6 +278,40 @@ public final class GConstants {
 
         public String getToolTipText() {
             return toolTipText;
+        }
+    }
+
+    public enum ETextConstants {
+        eDefaultText("Text"),
+        eInputPrompt("텍스트를 입력하세요:"),
+        eDefaultFontName("Arial"),
+        eDefaultFontSize("20");
+
+        private String value;
+
+        ETextConstants(String value) {
+            this.value = value;
+        }
+
+        public static void setValues(Node node) {
+            for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+                try {
+                    Node element = node.getChildNodes().item(i);
+                    if (element.getNodeType() == Node.ELEMENT_NODE) {
+                        ETextConstants eTextConstants = ETextConstants.valueOf(element.getNodeName());
+                        Node valueAttr = element.getAttributes().getNamedItem("value");
+                        if (valueAttr != null) {
+                            eTextConstants.value = valueAttr.getNodeValue();
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public String getValue() {
+            return value;
         }
     }
 

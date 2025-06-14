@@ -3,6 +3,7 @@ package menus;
 import frames.GComponent;
 import frames.GDrawingPanel;
 import shapes.GShape;
+import global.GConstants;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -12,8 +13,6 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Vector;
 
-import static global.GConstants.*;
-
 public class GFileMenu extends JMenu implements GComponent {
 	private static final long serialVersionUID = 1L;
 	private GDrawingPanel drawingPanel;
@@ -22,31 +21,39 @@ public class GFileMenu extends JMenu implements GComponent {
 
 	public GFileMenu() {
 		super("File");
-		addEventHandler();
+		this.createComponents();
+		this.setAttributes();
+		this.arrangeComponents();
+		this.addEventHandler();
 	}
 
 	@Override
 	public void createComponents() {
-		//
 	}
 
 	@Override
 	public void setAttributes() {
-		//
 	}
 
 	@Override
 	public void arrangeComponents() {
-		//
 	}
 
 	@Override
 	public void addEventHandler() {
 		ActionHandler actionHandler = new ActionHandler();
-		for(EFileMenuItem eFileMenuItem : EFileMenuItem.values()) {
+		for(GConstants.EFileMenuItem eFileMenuItem : GConstants.EFileMenuItem.values()) {
 			JMenuItem menuItem = new JMenuItem(eFileMenuItem.getName());
 			menuItem.addActionListener(actionHandler);
 			menuItem.setActionCommand(eFileMenuItem.name());
+
+			if (eFileMenuItem.getAccelerator() != null) {
+				menuItem.setAccelerator(eFileMenuItem.getAccelerator());
+			}
+			if (eFileMenuItem.getToolTipText() != null && !eFileMenuItem.getToolTipText().isEmpty()) {
+				menuItem.setToolTipText(eFileMenuItem.getToolTipText());
+			}
+
 			this.add(menuItem);
 		}
 	}
@@ -62,18 +69,18 @@ public class GFileMenu extends JMenu implements GComponent {
 		if(this.drawingPanel.isUpdated()){
 			this.save();
 		}
-		JFileChooser chooser = new JFileChooser();
+		JFileChooser chooser = new JFileChooser(this.dir);
 		chooser.setFileFilter(new FileNameExtensionFilter("Graphic Editor Files (*.ged)", "ged"));
 		if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
 			File selectedFile = chooser.getSelectedFile();
 			try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(selectedFile))) {
 				this.drawingPanel.setShapes((Vector<GShape>) in.readObject());
 				this.file = selectedFile;
+				this.drawingPanel.setBUpdated(false);
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(this, "파일을 열 수 없습니다: " + e.getMessage(), "오류", JOptionPane.ERROR_MESSAGE);
 			}
 		}
-
 	}
 
 	public void save(){
@@ -107,7 +114,7 @@ public class GFileMenu extends JMenu implements GComponent {
 	}
 
 	private boolean saveToFile(File file) {
-		try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(this.file)))) {
+		try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
 			out.writeObject(this.drawingPanel.getShapes());
 			this.drawingPanel.setBUpdated(false);
 			return true;
@@ -124,7 +131,6 @@ public class GFileMenu extends JMenu implements GComponent {
 			if(reply == JOptionPane.YES_OPTION) {
 				this.save();
 			} else if(reply == JOptionPane.NO_OPTION) {
-				//
 			} else if(reply == JOptionPane.CANCEL_OPTION) {
 				bCancel = true;
 			}
@@ -152,8 +158,9 @@ public class GFileMenu extends JMenu implements GComponent {
 		}
 	}
 
+	@Override
 	public void initialize(){
-		this.dir = new File("/Users/abcd/IdeaProjects/GraphicEditor_project");
+		this.dir = new File(GConstants.EFileMenuItem.getDefaultPathName());
 		this.file = null;
 	}
 
@@ -164,7 +171,7 @@ public class GFileMenu extends JMenu implements GComponent {
 	private class ActionHandler implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			EFileMenuItem eFileMenuItem = EFileMenuItem.valueOf(e.getActionCommand());
+			GConstants.EFileMenuItem eFileMenuItem = GConstants.EFileMenuItem.valueOf(e.getActionCommand());
 			invokeMethod(eFileMenuItem.getMethodName());
 		}
 	}

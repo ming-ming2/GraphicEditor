@@ -36,6 +36,13 @@
         <eEllipse label="타원" toolTipText="타원을 그립니다" />
         <eLine label="직선" toolTipText="직선을 그립니다" />
         <ePolygon label="다각형" toolTipText="다각형을 그립니다" />
-        <eText label="텍스트" toolTipText="텍스트를 입력합니다" />
+        <eTextBox label="텍스트" toolTipText="텍스트를 입력합니다" />
     </EShapeTool>
+
+    <ETextConstants>
+        <eDefaultText value="Text" />
+        <eInputPrompt value="텍스트를 입력하세요:" />
+        <eDefaultFontName value="Arial" />
+        <eDefaultFontSize value="20" />
+    </ETextConstants>
 </GConstants>
