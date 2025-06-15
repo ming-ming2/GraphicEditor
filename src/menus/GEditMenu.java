@@ -26,13 +26,31 @@ public class GEditMenu extends JMenu implements GComponent {
     }
 
     @Override
+    public void setAttributes() {
+        Font menuFont = new Font("Dialog", Font.PLAIN, 12);
+        this.setFont(menuFont);
+
+        for (int i = 0; i < this.getItemCount(); i++) {
+            JMenuItem item = this.getItem(i);
+            if (item != null) {
+                item.setFont(menuFont);
+            }
+        }
+
+        updateUndoRedoState();
+        updateClipboardState();
+        updateSelectionState();
+    }
+
+    @Override
     public void arrangeComponents() {
         boolean firstItem = true;
         for (GConstants.EEditMenuItem eEditMenuItem : GConstants.EEditMenuItem.values()) {
             if (!firstItem && (eEditMenuItem == GConstants.EEditMenuItem.eCut ||
                     eEditMenuItem == GConstants.EEditMenuItem.eDuplicate ||
                     eEditMenuItem == GConstants.EEditMenuItem.eGroup ||
-                    eEditMenuItem == GConstants.EEditMenuItem.eBringToFront)) {
+                    eEditMenuItem == GConstants.EEditMenuItem.eBringToFront ||
+                    eEditMenuItem == GConstants.EEditMenuItem.eRotateRight)) {
                 this.add(new JSeparator());
             }
 
@@ -52,23 +70,6 @@ public class GEditMenu extends JMenu implements GComponent {
     }
 
     @Override
-    public void setAttributes() {
-        Font menuFont = new Font("Dialog", Font.PLAIN, 12);
-        this.setFont(menuFont);
-
-        for (int i = 0; i < this.getItemCount(); i++) {
-            JMenuItem item = this.getItem(i);
-            if (item != null) {
-                item.setFont(menuFont);
-            }
-        }
-
-        updateUndoRedoState();
-        updateClipboardState();
-        updateSelectionState();
-    }
-
-    @Override
     public void addEventHandler() {
         for (int i = 0; i < this.getItemCount(); i++) {
             JMenuItem item = this.getItem(i);
@@ -80,10 +81,25 @@ public class GEditMenu extends JMenu implements GComponent {
                     updateClipboardState();
                     updateGroupState();
                     updateLayerState();
+                    updateTransformState();
                     updateSelectionState();
                 });
             }
         }
+    }
+
+    @Override
+    public void initialize() {
+    }
+
+    public void associate(GDrawingPanel drawingPanel) {
+        this.drawingPanel = drawingPanel;
+        updateUndoRedoState();
+        updateClipboardState();
+        updateGroupState();
+        updateLayerState();
+        updateTransformState();
+        updateSelectionState();
     }
 
     private void handleMenuAction(String command) {
@@ -136,6 +152,18 @@ public class GEditMenu extends JMenu implements GComponent {
                     break;
                 case "sendBackward":
                     sendBackward();
+                    break;
+                case "rotateRight":
+                    rotateRight();
+                    break;
+                case "rotateLeft":
+                    rotateLeft();
+                    break;
+                case "flipHorizontal":
+                    flipHorizontal();
+                    break;
+                case "flipVertical":
+                    flipVertical();
                     break;
             }
         } catch (IllegalArgumentException e) {
@@ -232,8 +260,28 @@ public class GEditMenu extends JMenu implements GComponent {
         }
     }
 
-    @Override
-    public void initialize() {
+    private void rotateRight() {
+        if (drawingPanel != null) {
+            drawingPanel.rotateRight();
+        }
+    }
+
+    private void rotateLeft() {
+        if (drawingPanel != null) {
+            drawingPanel.rotateLeft();
+        }
+    }
+
+    private void flipHorizontal() {
+        if (drawingPanel != null) {
+            drawingPanel.flipHorizontal();
+        }
+    }
+
+    private void flipVertical() {
+        if (drawingPanel != null) {
+            drawingPanel.flipVertical();
+        }
     }
 
     public void updateUndoRedoState() {
@@ -246,29 +294,10 @@ public class GEditMenu extends JMenu implements GComponent {
             JMenuItem item = this.getItem(i);
             if (item != null) {
                 String command = item.getActionCommand();
-                if ("eUndo".equals(command)) {
+                if (GConstants.EEditMenuItem.eUndo.name().equals(command)) {
                     item.setEnabled(canUndo);
-                } else if ("eRedo".equals(command)) {
+                } else if (GConstants.EEditMenuItem.eRedo.name().equals(command)) {
                     item.setEnabled(canRedo);
-                }
-            }
-        }
-    }
-
-    public void updateGroupState() {
-        if (drawingPanel == null) return;
-
-        boolean canGroup = drawingPanel.canGroup();
-        boolean canUngroup = drawingPanel.canUngroup();
-
-        for (int i = 0; i < this.getItemCount(); i++) {
-            JMenuItem item = this.getItem(i);
-            if (item != null) {
-                String command = item.getActionCommand();
-                if ("eGroup".equals(command)) {
-                    item.setEnabled(canGroup);
-                } else if ("eUnGroup".equals(command)) {
-                    item.setEnabled(canUngroup);
                 }
             }
         }
@@ -284,10 +313,32 @@ public class GEditMenu extends JMenu implements GComponent {
             JMenuItem item = this.getItem(i);
             if (item != null) {
                 String command = item.getActionCommand();
-                if ("eCut".equals(command) || "eCopy".equals(command) || "eDelete".equals(command) || "eDuplicate".equals(command)) {
+                if (GConstants.EEditMenuItem.eCut.name().equals(command) ||
+                        GConstants.EEditMenuItem.eCopy.name().equals(command) ||
+                        GConstants.EEditMenuItem.eDelete.name().equals(command) ||
+                        GConstants.EEditMenuItem.eDuplicate.name().equals(command)) {
                     item.setEnabled(hasSelection);
-                } else if ("ePaste".equals(command)) {
+                } else if (GConstants.EEditMenuItem.ePaste.name().equals(command)) {
                     item.setEnabled(hasClipboardContent);
+                }
+            }
+        }
+    }
+
+    public void updateGroupState() {
+        if (drawingPanel == null) return;
+
+        boolean canGroup = drawingPanel.canGroup();
+        boolean canUngroup = drawingPanel.canUngroup();
+
+        for (int i = 0; i < this.getItemCount(); i++) {
+            JMenuItem item = this.getItem(i);
+            if (item != null) {
+                String command = item.getActionCommand();
+                if (GConstants.EEditMenuItem.eGroup.name().equals(command)) {
+                    item.setEnabled(canGroup);
+                } else if (GConstants.EEditMenuItem.eUnGroup.name().equals(command)) {
+                    item.setEnabled(canUngroup);
                 }
             }
         }
@@ -305,14 +356,33 @@ public class GEditMenu extends JMenu implements GComponent {
             JMenuItem item = this.getItem(i);
             if (item != null) {
                 String command = item.getActionCommand();
-                if ("eBringToFront".equals(command)) {
+                if (GConstants.EEditMenuItem.eBringToFront.name().equals(command)) {
                     item.setEnabled(canBringToFront);
-                } else if ("eSendToBack".equals(command)) {
+                } else if (GConstants.EEditMenuItem.eSendToBack.name().equals(command)) {
                     item.setEnabled(canSendToBack);
-                } else if ("eBringForward".equals(command)) {
+                } else if (GConstants.EEditMenuItem.eBringForward.name().equals(command)) {
                     item.setEnabled(canBringForward);
-                } else if ("eSendBackward".equals(command)) {
+                } else if (GConstants.EEditMenuItem.eSendBackward.name().equals(command)) {
                     item.setEnabled(canSendBackward);
+                }
+            }
+        }
+    }
+
+    public void updateTransformState() {
+        if (drawingPanel == null) return;
+
+        boolean canTransform = drawingPanel.canTransform();
+
+        for (int i = 0; i < this.getItemCount(); i++) {
+            JMenuItem item = this.getItem(i);
+            if (item != null) {
+                String command = item.getActionCommand();
+                if (GConstants.EEditMenuItem.eRotateRight.name().equals(command) ||
+                        GConstants.EEditMenuItem.eRotateLeft.name().equals(command) ||
+                        GConstants.EEditMenuItem.eFlipHorizontal.name().equals(command) ||
+                        GConstants.EEditMenuItem.eFlipVertical.name().equals(command)) {
+                    item.setEnabled(canTransform);
                 }
             }
         }
@@ -328,21 +398,12 @@ public class GEditMenu extends JMenu implements GComponent {
             JMenuItem item = this.getItem(i);
             if (item != null) {
                 String command = item.getActionCommand();
-                if ("eSelectAll".equals(command)) {
+                if (GConstants.EEditMenuItem.eSelectAll.name().equals(command)) {
                     item.setEnabled(hasShapes);
-                } else if ("eDeselectAll".equals(command)) {
+                } else if (GConstants.EEditMenuItem.eDeselectAll.name().equals(command)) {
                     item.setEnabled(hasSelection);
                 }
             }
         }
-    }
-
-    public void associate(GDrawingPanel drawingPanel) {
-        this.drawingPanel = drawingPanel;
-        updateUndoRedoState();
-        updateClipboardState();
-        updateGroupState();
-        updateLayerState();
-        updateSelectionState();
     }
 }

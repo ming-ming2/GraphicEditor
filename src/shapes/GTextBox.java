@@ -125,7 +125,7 @@ public class GTextBox extends GShape {
         updateCursorPosition();
     }
 
-    private void updateWrappedLines() {
+    public void updateWrappedLines() {
         wrappedLines.clear();
 
         if (text.isEmpty()) {
@@ -168,7 +168,7 @@ public class GTextBox extends GShape {
         }
     }
 
-    private void updateCursorPosition() {
+    public void updateCursorPosition() {
         cursorLine = 0;
         cursorColumn = 0;
 
@@ -243,6 +243,11 @@ public class GTextBox extends GShape {
             }
             cursorLine++;
         }
+    }
+
+    public void forceUpdate() {
+        updateWrappedLines();
+        updateCursorPosition();
     }
 
     @Override

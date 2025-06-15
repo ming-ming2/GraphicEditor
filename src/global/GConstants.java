@@ -252,7 +252,11 @@ public final class GConstants {
         eBringToFront(null, "bringToFront", KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)),
         eSendToBack(null, "sendToBack", KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)),
         eBringForward(null, "bringForward", KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, InputEvent.CTRL_MASK)),
-        eSendBackward(null, "sendBackward", KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, InputEvent.CTRL_MASK));
+        eSendBackward(null, "sendBackward", KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, InputEvent.CTRL_MASK)),
+        eRotateRight(null, "rotateRight", KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_MASK)),
+        eRotateLeft(null, "rotateLeft", KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.CTRL_MASK)),
+        eFlipHorizontal(null, "flipHorizontal", KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.CTRL_MASK)),
+        eFlipVertical(null, "flipVertical", KeyStroke.getKeyStroke(KeyEvent.VK_J, InputEvent.CTRL_MASK));
 
         private String name;
         private String methodName;

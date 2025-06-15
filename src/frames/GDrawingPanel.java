@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.print.*;
 import java.util.Vector;
 import java.util.List;
@@ -433,6 +434,108 @@ public class GDrawingPanel extends JPanel implements Printable {
 			}
 		}
 		return false;
+	}
+
+	public void rotateRight() {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (!selectedShapes.isEmpty()) {
+			for (GShape shape : selectedShapes) {
+				Rectangle2D bounds = shape.getTransformedShape().getBounds2D();
+				double centerX = bounds.getCenterX();
+				double centerY = bounds.getCenterY();
+				AffineTransform rotation = new AffineTransform();
+				rotation.rotate(Math.toRadians(90), centerX, centerY);
+				shape.getAffineTransform().preConcatenate(rotation);
+
+				if (shape instanceof GTextBox) {
+					normalizeTextBox(shape, centerX, centerY);
+				}
+			}
+			saveCurrentState();
+			this.bUpdated = true;
+			this.repaint();
+		}
+	}
+
+	public void rotateLeft() {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (!selectedShapes.isEmpty()) {
+			for (GShape shape : selectedShapes) {
+				Rectangle2D bounds = shape.getTransformedShape().getBounds2D();
+				double centerX = bounds.getCenterX();
+				double centerY = bounds.getCenterY();
+				AffineTransform rotation = new AffineTransform();
+				rotation.rotate(Math.toRadians(-90), centerX, centerY);
+				shape.getAffineTransform().preConcatenate(rotation);
+
+				if (shape instanceof GTextBox) {
+					normalizeTextBox(shape, centerX, centerY);
+				}
+			}
+			saveCurrentState();
+			this.bUpdated = true;
+			this.repaint();
+		}
+	}
+
+	public void flipHorizontal() {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (!selectedShapes.isEmpty()) {
+			for (GShape shape : selectedShapes) {
+				Rectangle2D bounds = shape.getTransformedShape().getBounds2D();
+				double centerX = bounds.getCenterX();
+				double centerY = bounds.getCenterY();
+				AffineTransform flip = new AffineTransform();
+				flip.translate(centerX, centerY);
+				flip.scale(-1, 1);
+				flip.translate(-centerX, -centerY);
+				shape.getAffineTransform().preConcatenate(flip);
+
+				if (shape instanceof GTextBox) {
+					normalizeTextBox(shape, centerX, centerY);
+				}
+			}
+			saveCurrentState();
+			this.bUpdated = true;
+			this.repaint();
+		}
+	}
+
+	public void flipVertical() {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (!selectedShapes.isEmpty()) {
+			for (GShape shape : selectedShapes) {
+				Rectangle2D bounds = shape.getTransformedShape().getBounds2D();
+				double centerX = bounds.getCenterX();
+				double centerY = bounds.getCenterY();
+				AffineTransform flip = new AffineTransform();
+				flip.translate(centerX, centerY);
+				flip.scale(1, -1);
+				flip.translate(-centerX, -centerY);
+				shape.getAffineTransform().preConcatenate(flip);
+
+				if (shape instanceof GTextBox) {
+					normalizeTextBox(shape, centerX, centerY);
+				}
+			}
+			saveCurrentState();
+			this.bUpdated = true;
+			this.repaint();
+		}
+	}
+
+
+	private void normalizeTextBox(GShape shape, double centerX, double centerY) {
+		if (shape instanceof GTextBox) {
+			GMover gMover = new GMover((GTextBox) shape);
+			gMover.start((int) centerX, (int) centerY);
+			gMover.drag((int) (centerX+1), (int) (centerY+1));
+			repaint();
+		}
+	}
+
+	public boolean canTransform() {
+		return !getSelectedShapes().isEmpty();
 	}
 
 	public void applyLineWidthToSelected(float lineWidth) {
@@ -1067,6 +1170,26 @@ public class GDrawingPanel extends JPanel implements Printable {
 
 			if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_A) {
 				selectAll();
+				return;
+			}
+
+			if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_R) {
+				rotateRight();
+				return;
+			}
+
+			if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_L) {
+				rotateLeft();
+				return;
+			}
+
+			if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_H) {
+				flipHorizontal();
+				return;
+			}
+
+			if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_J) {
+				flipVertical();
 				return;
 			}
 

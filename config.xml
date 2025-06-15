@@ -28,6 +28,10 @@
         <eSendToBack label="맨 뒤로" toolTipText="선택된 객체를 맨 뒤로 보냅니다" />
         <eBringForward label="앞으로" toolTipText="선택된 객체를 한 단계 앞으로 가져옵니다" />
         <eSendBackward label="뒤로" toolTipText="선택된 객체를 한 단계 뒤로 보냅니다" />
+        <eRotateRight label="오른쪽 90도 회전" toolTipText="선택된 객체를 시계방향으로 90도 회전합니다" />
+        <eRotateLeft label="왼쪽 90도 회전" toolTipText="선택된 객체를 반시계방향으로 90도 회전합니다" />
+        <eFlipHorizontal label="좌우 반전" toolTipText="선택된 객체를 좌우로 반전합니다" />
+        <eFlipVertical label="상하 반전" toolTipText="선택된 객체를 상하로 반전합니다" />
     </EEditMenuItem>
 
     <EGraphicsMenuItem>
