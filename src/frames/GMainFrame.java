@@ -6,8 +6,10 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.Serial;
+import java.io.InputStream;
 
 import javax.swing.*;
+import javax.imageio.ImageIO;
 
 
 public class GMainFrame extends JFrame implements GComponent {
@@ -16,10 +18,11 @@ public class GMainFrame extends JFrame implements GComponent {
 	private GMenuBar menuBar;
 	private GShapeToolBar toolBar;
 	private GDrawingPanel drawingPanel;
+	private JScrollPane scrollPane;
 
 	public GMainFrame(){
-		this.setAttributes();
 		this.createComponents();
+		this.setAttributes();
 		this.arrangeComponents();
 		this.addEventHandler();
 	}
@@ -30,6 +33,7 @@ public class GMainFrame extends JFrame implements GComponent {
 		this.setJMenuBar(menuBar);
 		this.toolBar = new GShapeToolBar();
 		this.drawingPanel = new GDrawingPanel();
+		this.scrollPane = new JScrollPane(drawingPanel);
 	}
 
 	@Override
@@ -46,12 +50,32 @@ public class GMainFrame extends JFrame implements GComponent {
 
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.setLayout(new BorderLayout());
+
+		// 프로그램 아이콘 설정
+		try {
+			InputStream iconStream = getClass().getResourceAsStream("/rsc/icon.jpg");
+			if (iconStream != null) {
+				Image icon = ImageIO.read(iconStream);
+				this.setIconImage(icon);
+			} else {
+				System.out.println("아이콘 파일을 찾을 수 없습니다: /rsc/icon.jpg");
+			}
+		} catch (Exception e) {
+			System.out.println("아이콘 로드 실패: " + e.getMessage());
+		}
+
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.getViewport().setBackground(Color.WHITE);
+
+		drawingPanel.setBackground(Color.WHITE);
+		drawingPanel.setPreferredSize(new Dimension(800, 600));
 	}
 
 	@Override
 	public void arrangeComponents() {
 		this.add(toolBar, BorderLayout.NORTH);
-		this.add(drawingPanel, BorderLayout.CENTER);
+		this.add(scrollPane, BorderLayout.CENTER);
 	}
 
 	@Override
@@ -96,6 +120,7 @@ public class GMainFrame extends JFrame implements GComponent {
 	}
 
 	public void initialize() {
+		this.drawingPanel.setParentScrollPane(this.scrollPane);
 		this.menuBar.associate(this.drawingPanel);
 		this.toolBar.associate(this.drawingPanel);
 

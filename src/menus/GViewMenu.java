@@ -62,15 +62,21 @@ public class GViewMenu extends JMenu implements GComponent {
     @Override
     public void addEventHandler() {
         zoomInMenuItem.addActionListener(e -> {
-            // 확대 기능 추가 예정
+            if (drawingPanel != null) {
+                drawingPanel.zoomIn();
+            }
         });
 
         zoomOutMenuItem.addActionListener(e -> {
-            // 축소 기능 추가 예정
+            if (drawingPanel != null) {
+                drawingPanel.zoomOut();
+            }
         });
 
         zoomResetMenuItem.addActionListener(e -> {
-            // 줌 초기화 기능 추가 예정
+            if (drawingPanel != null) {
+                drawingPanel.resetZoom();
+            }
         });
     }
 

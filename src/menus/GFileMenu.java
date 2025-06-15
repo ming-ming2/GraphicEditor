@@ -147,7 +147,9 @@ public class GFileMenu extends JMenu implements GComponent {
 	}
 
 	public void print(){
-		System.out.println("print");
+		if (this.drawingPanel != null) {
+			this.drawingPanel.printPanel();
+		}
 	}
 
 	private void invokeMethod(String name){

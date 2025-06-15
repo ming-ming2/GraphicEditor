@@ -73,6 +73,9 @@ public class GEditMenu extends JMenu implements GComponent {
                 item.addActionListener(e -> {
                     String command = e.getActionCommand();
                     handleMenuAction(command);
+                    updateUndoRedoState();
+                    updateClipboardState();
+                    updateGroupState();
                 });
             }
         }
@@ -115,35 +118,51 @@ public class GEditMenu extends JMenu implements GComponent {
     }
 
     private void undo() {
-        System.out.println("Undo - 구현 예정");
+        if (drawingPanel != null) {
+            drawingPanel.undo();
+        }
     }
 
     private void redo() {
-        System.out.println("Redo - 구현 예정");
+        if (drawingPanel != null) {
+            drawingPanel.redo();
+        }
     }
 
     private void cut() {
-        System.out.println("Cut - 구현 예정");
+        if (drawingPanel != null) {
+            drawingPanel.cut();
+        }
     }
 
     private void copy() {
-        System.out.println("Copy - 구현 예정");
+        if (drawingPanel != null) {
+            drawingPanel.copy();
+        }
     }
 
     private void paste() {
-        System.out.println("Paste - 구현 예정");
+        if (drawingPanel != null) {
+            drawingPanel.paste();
+        }
     }
 
     private void delete() {
-        System.out.println("Delete - 구현 예정");
+        if (drawingPanel != null) {
+            drawingPanel.delete();
+        }
     }
 
     private void group() {
-        System.out.println("Group - 구현 예정");
+        if (drawingPanel != null) {
+            drawingPanel.group();
+        }
     }
 
     private void unGroup() {
-        System.out.println("UnGroup - 구현 예정");
+        if (drawingPanel != null) {
+            drawingPanel.ungroup();
+        }
     }
 
     @Override
@@ -151,8 +170,10 @@ public class GEditMenu extends JMenu implements GComponent {
     }
 
     public void updateUndoRedoState() {
-        boolean canUndo = false;
-        boolean canRedo = false;
+        if (drawingPanel == null) return;
+
+        boolean canUndo = drawingPanel.canUndo();
+        boolean canRedo = drawingPanel.canRedo();
 
         for (int i = 0; i < this.getItemCount(); i++) {
             JMenuItem item = this.getItem(i);
@@ -167,15 +188,36 @@ public class GEditMenu extends JMenu implements GComponent {
         }
     }
 
-    public void updateClipboardState() {
-        boolean hasSelection = false;
-        boolean hasClipboardContent = false;
+    public void updateGroupState() {
+        if (drawingPanel == null) return;
+
+        boolean canGroup = drawingPanel.canGroup();
+        boolean canUngroup = drawingPanel.canUngroup();
 
         for (int i = 0; i < this.getItemCount(); i++) {
             JMenuItem item = this.getItem(i);
             if (item != null) {
                 String command = item.getActionCommand();
-                if ("eCut".equals(command) || "eCopy".equals(command)) {
+                if ("eGroup".equals(command)) {
+                    item.setEnabled(canGroup);
+                } else if ("eUnGroup".equals(command)) {
+                    item.setEnabled(canUngroup);
+                }
+            }
+        }
+    }
+
+    public void updateClipboardState() {
+        if (drawingPanel == null) return;
+
+        boolean hasSelection = drawingPanel.hasSelection();
+        boolean hasClipboardContent = drawingPanel.hasClipboardContent();
+
+        for (int i = 0; i < this.getItemCount(); i++) {
+            JMenuItem item = this.getItem(i);
+            if (item != null) {
+                String command = item.getActionCommand();
+                if ("eCut".equals(command) || "eCopy".equals(command) || "eDelete".equals(command)) {
                     item.setEnabled(hasSelection);
                 } else if ("ePaste".equals(command)) {
                     item.setEnabled(hasClipboardContent);
@@ -186,5 +228,8 @@ public class GEditMenu extends JMenu implements GComponent {
 
     public void associate(GDrawingPanel drawingPanel) {
         this.drawingPanel = drawingPanel;
+        updateUndoRedoState();
+        updateClipboardState();
+        updateGroupState();
     }
 }

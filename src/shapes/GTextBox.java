@@ -289,63 +289,24 @@ public class GTextBox extends GShape {
         double[] matrix = new double[6];
         shapeTransform.getMatrix(matrix);
 
-        double rotationAngle = Math.atan2(matrix[1], matrix[0]);
+        double scaleX = Math.sqrt(matrix[0] * matrix[0] + matrix[1] * matrix[1]);
+        double scaleY = Math.sqrt(matrix[2] * matrix[2] + matrix[3] * matrix[3]);
 
-        double effectiveScaleX = (matrix[0] * Math.cos(rotationAngle) + matrix[1] * Math.sin(rotationAngle));
-        double effectiveScaleY = (matrix[2] * -Math.sin(rotationAngle) + matrix[3] * Math.cos(rotationAngle));
+        AffineTransform textTransform = new AffineTransform(shapeTransform);
+        textTransform.scale(1.0/scaleX, 1.0/scaleY);
 
-        boolean isFlippedX = effectiveScaleX < 0;
-        boolean isFlippedY = effectiveScaleY < 0;
-
-        double scaleX_mag = Math.sqrt(matrix[0] * matrix[0] + matrix[1] * matrix[1]);
-        double scaleY_mag = Math.sqrt(matrix[2] * matrix[2] + matrix[3] * matrix[3]);
-
-        double logicalScaledWidth = rectangle.getWidth() * scaleX_mag;
-        double logicalScaledHeight = rectangle.getHeight() * scaleY_mag;
-
-        // 원본 직사각형의 좌상단 좌표 고정 사용
-        Point2D sourceRectTopLeft = new Point2D.Double(rectangle.getMinX(), rectangle.getMinY());
-        Point2D transformedRectTopLeft = new Point2D.Double();
-        shapeTransform.transform(sourceRectTopLeft, transformedRectTopLeft);
-
-        AffineTransform contentDrawingTransform = new AffineTransform();
-        contentDrawingTransform.translate(transformedRectTopLeft.getX(), transformedRectTopLeft.getY());
-        contentDrawingTransform.rotate(rotationAngle);
-
-        // 좌우 반전 시에만 X축 반전 (텍스트는 상하 반전 안함)
-        if (isFlippedX) {
-            contentDrawingTransform.scale(-1, 1);
-            contentDrawingTransform.translate(-logicalScaledWidth, 0);
-        }
-
-        // 상하 반전 시 Y축 반전하되, 텍스트를 윗변 기준으로 대칭 이동
-        if (isFlippedY) {
-            contentDrawingTransform.scale(1, -1);
-            contentDrawingTransform.translate(0, -logicalScaledHeight);
-        }
-
-        graphics2D.setTransform(contentDrawingTransform);
+        graphics2D.setTransform(textTransform);
         graphics2D.setFont(font);
 
         FontMetrics fm = graphics2D.getFontMetrics();
         int lineHeight = fm.getHeight();
 
-        double startY = PADDING;
+        double textX = rectangle.getX() * scaleX + PADDING;
+        double textY = rectangle.getY() * scaleY + PADDING + fm.getAscent();
 
-        // 상하 반전 시 텍스트를 박스의 윗변에서 시작하도록 조정
-        if (isFlippedY) {
-            startY = logicalScaledHeight - PADDING - (wrappedLines.size() * lineHeight);
-        }
-
-        double currentY = startY;
-
-        for (int i = 0; i < wrappedLines.size(); i++) {
-            String line = wrappedLines.get(i);
-            double lineX = PADDING;
-
-            double lineY = currentY + fm.getAscent();
-            graphics2D.drawString(line, (float) lineX, (float) lineY);
-            currentY += lineHeight;
+        for (String line : wrappedLines) {
+            graphics2D.drawString(line, (float) textX, (float) textY);
+            textY += lineHeight;
         }
 
         graphics2D.setTransform(originalGTransform);
@@ -358,65 +319,31 @@ public class GTextBox extends GShape {
         double[] matrix = new double[6];
         shapeTransform.getMatrix(matrix);
 
-        double rotationAngle = Math.atan2(matrix[1], matrix[0]);
+        double scaleX = Math.sqrt(matrix[0] * matrix[0] + matrix[1] * matrix[1]);
+        double scaleY = Math.sqrt(matrix[2] * matrix[2] + matrix[3] * matrix[3]);
 
-        double effectiveScaleX = (matrix[0] * Math.cos(rotationAngle) + matrix[1] * Math.sin(rotationAngle));
-        double effectiveScaleY = (matrix[2] * -Math.sin(rotationAngle) + matrix[3] * Math.cos(rotationAngle));
+        AffineTransform cursorTransform = new AffineTransform(shapeTransform);
+        cursorTransform.scale(1.0/scaleX, 1.0/scaleY);
 
-        boolean isFlippedX = effectiveScaleX < 0;
-        boolean isFlippedY = effectiveScaleY < 0;
-
-        double scaleX_mag = Math.sqrt(matrix[0] * matrix[0] + matrix[1] * matrix[1]);
-        double scaleY_mag = Math.sqrt(matrix[2] * matrix[2] + matrix[3] * matrix[3]);
-
-        double logicalScaledWidth = rectangle.getWidth() * scaleX_mag;
-        double logicalScaledHeight = rectangle.getHeight() * scaleY_mag;
-
-        Point2D sourceRectTopLeft = new Point2D.Double(rectangle.getMinX(), rectangle.getMinY());
-        Point2D transformedRectTopLeft = new Point2D.Double();
-        shapeTransform.transform(sourceRectTopLeft, transformedRectTopLeft);
-
-        AffineTransform cursorDrawingTransform = new AffineTransform();
-        cursorDrawingTransform.translate(transformedRectTopLeft.getX(), transformedRectTopLeft.getY());
-        cursorDrawingTransform.rotate(rotationAngle);
-
-        if (isFlippedX) {
-            cursorDrawingTransform.scale(-1, 1);
-            cursorDrawingTransform.translate(-logicalScaledWidth, 0);
-        }
-
-        if (isFlippedY) {
-            cursorDrawingTransform.scale(1, -1);
-            cursorDrawingTransform.translate(0, -logicalScaledHeight);
-        }
-
-        graphics2D.setTransform(cursorDrawingTransform);
+        graphics2D.setTransform(cursorTransform);
         graphics2D.setFont(font);
+
         FontMetrics fm = graphics2D.getFontMetrics();
         int lineHeight = fm.getHeight();
 
-        double cursorX = PADDING;
-        double startY = PADDING;
-
-        // 상하 반전 시 커서도 동일하게 조정
-        if (isFlippedY) {
-            startY = logicalScaledHeight - PADDING - (wrappedLines.size() * lineHeight);
-        }
-
-        double cursorYTop = startY;
+        double cursorX = rectangle.getX() * scaleX + PADDING;
+        double cursorY = rectangle.getY() * scaleY + PADDING;
 
         if (cursorLine < wrappedLines.size()) {
             String line = wrappedLines.get(cursorLine);
             String beforeCursor = line.substring(0, Math.min(cursorColumn, line.length()));
-
             cursorX += fm.stringWidth(beforeCursor);
-
-            cursorYTop += cursorLine * lineHeight;
-            double cursorYBottom = cursorYTop + lineHeight;
-
-            graphics2D.drawLine((int) cursorX, (int) cursorYTop,
-                    (int) cursorX, (int) cursorYBottom);
         }
+
+        cursorY += cursorLine * lineHeight;
+
+        graphics2D.drawLine((int) cursorX, (int) cursorY,
+                (int) cursorX, (int) (cursorY + lineHeight));
 
         graphics2D.setTransform(originalGTransform);
     }

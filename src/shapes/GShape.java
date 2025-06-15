@@ -1,6 +1,7 @@
 package shapes;
 
 import global.GConstants;
+import global.GGraphicsProperties;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -21,6 +22,11 @@ public abstract class GShape implements Serializable {
     private boolean bSelected;
     private EAnchor eSelectedAnchor;
 
+    private float lineWidth;
+    private GGraphicsProperties.LineStyle lineStyle;
+    private Color lineColor;
+    private Color fillColor;
+
     public GShape(Shape shape) {
         this.shape = shape;
         this.affineTransform = new AffineTransform();
@@ -30,6 +36,12 @@ public abstract class GShape implements Serializable {
         }
         this.bSelected = false;
         this.eSelectedAnchor = null;
+
+        GGraphicsProperties props = GGraphicsProperties.getInstance();
+        this.lineWidth = props.getLineWidth();
+        this.lineStyle = props.getLineStyle();
+        this.lineColor = props.getLineColor();
+        this.fillColor = props.getFillColor();
     }
 
     public Shape getTransformedShape() {
@@ -67,6 +79,38 @@ public abstract class GShape implements Serializable {
 
     public Rectangle2D getBounds() {
         return shape.getBounds2D();
+    }
+
+    public float getLineWidth() {
+        return lineWidth;
+    }
+
+    public void setLineWidth(float lineWidth) {
+        this.lineWidth = lineWidth;
+    }
+
+    public GGraphicsProperties.LineStyle getLineStyle() {
+        return lineStyle;
+    }
+
+    public void setLineStyle(GGraphicsProperties.LineStyle lineStyle) {
+        this.lineStyle = lineStyle;
+    }
+
+    public Color getLineColor() {
+        return lineColor;
+    }
+
+    public void setLineColor(Color lineColor) {
+        this.lineColor = lineColor;
+    }
+
+    public Color getFillColor() {
+        return fillColor;
+    }
+
+    public void setFillColor(Color fillColor) {
+        this.fillColor = fillColor;
     }
 
     protected void setAnchors() {
@@ -109,7 +153,32 @@ public abstract class GShape implements Serializable {
         graphics2D.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
         Shape transformedShape = this.getTransformedShape();
+
+        Stroke originalStroke = graphics2D.getStroke();
+        Color originalColor = graphics2D.getColor();
+
+        Stroke lineStroke;
+        switch (lineStyle) {
+            case DASHED:
+                float[] dashPattern = {10.0f, 5.0f};
+                lineStroke = new BasicStroke(lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, dashPattern, 0);
+                break;
+            case DOTTED:
+                float[] dotPattern = {2.0f, 3.0f};
+                lineStroke = new BasicStroke(lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, dotPattern, 0);
+                break;
+            case SOLID:
+            default:
+                lineStroke = new BasicStroke(lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+                break;
+        }
+
+        graphics2D.setStroke(lineStroke);
+        graphics2D.setColor(lineColor);
         graphics2D.draw(transformedShape);
+
+        graphics2D.setStroke(originalStroke);
+        graphics2D.setColor(originalColor);
 
         if (bSelected) {
             this.setAnchors();

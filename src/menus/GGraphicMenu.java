@@ -9,6 +9,7 @@ import javax.swing.JSeparator;
 
 import frames.GComponent;
 import frames.GDrawingPanel;
+import global.GGraphicsProperties;
 
 public class GGraphicMenu extends JMenu implements GComponent {
     private static final long serialVersionUID = 1L;
@@ -35,9 +36,9 @@ public class GGraphicMenu extends JMenu implements GComponent {
         fontStyleMenu = new JMenu("Font Style");
         fontSizeMenu = new JMenu("Font Size");
 
-        JMenuItem thinLineItem = new JMenuItem("Thin");
-        JMenuItem normalLineItem = new JMenuItem("Normal");
-        JMenuItem thickLineItem = new JMenuItem("Thick");
+        JMenuItem thinLineItem = new JMenuItem("Thin (1px)");
+        JMenuItem normalLineItem = new JMenuItem("Normal (2px)");
+        JMenuItem thickLineItem = new JMenuItem("Thick (4px)");
         lineWidthMenu.add(thinLineItem);
         lineWidthMenu.add(normalLineItem);
         lineWidthMenu.add(thickLineItem);
@@ -110,16 +111,61 @@ public class GGraphicMenu extends JMenu implements GComponent {
 
     @Override
     public void addEventHandler() {
-        ActionListener dummyAction = e -> System.out.println("Selected menu: " + e.getActionCommand());
+        // Line Width handlers
+        for (int i = 0; i < lineWidthMenu.getItemCount(); i++) {
+            JMenuItem item = lineWidthMenu.getItem(i);
+            final int index = i;
+            item.addActionListener(e -> {
+                float[] widths = {1.0f, 2.0f, 4.0f};
+                float selectedWidth = widths[index];
 
-        for (int i = 0; i < lineWidthMenu.getItemCount(); i++)
-            lineWidthMenu.getItem(i).addActionListener(dummyAction);
-        for (int i = 0; i < lineStyleMenu.getItemCount(); i++)
-            lineStyleMenu.getItem(i).addActionListener(dummyAction);
-        for (int i = 0; i < fontStyleMenu.getItemCount(); i++)
-            fontStyleMenu.getItem(i).addActionListener(dummyAction);
-        for (int i = 0; i < fontSizeMenu.getItemCount(); i++)
-            fontSizeMenu.getItem(i).addActionListener(dummyAction);
+                // 전역 설정 변경 (새로 그릴 도형용)
+                GGraphicsProperties.getInstance().setLineWidth(selectedWidth);
+
+                // 선택된 도형들에 적용
+                if (drawingPanel != null) {
+                    drawingPanel.applyLineWidthToSelected(selectedWidth);
+                }
+
+                System.out.println("Line width set to: " + selectedWidth + "px");
+            });
+        }
+
+        // Line Style handlers
+        for (int i = 0; i < lineStyleMenu.getItemCount(); i++) {
+            JMenuItem item = lineStyleMenu.getItem(i);
+            final int index = i;
+            item.addActionListener(e -> {
+                GGraphicsProperties.LineStyle[] styles = {
+                        GGraphicsProperties.LineStyle.SOLID,
+                        GGraphicsProperties.LineStyle.DASHED,
+                        GGraphicsProperties.LineStyle.DOTTED
+                };
+                GGraphicsProperties.LineStyle selectedStyle = styles[index];
+
+                // 전역 설정 변경 (새로 그릴 도형용)
+                GGraphicsProperties.getInstance().setLineStyle(selectedStyle);
+
+                // 선택된 도형들에 적용
+                if (drawingPanel != null) {
+                    drawingPanel.applyLineStyleToSelected(selectedStyle);
+                }
+
+                System.out.println("Line style set to: " + selectedStyle);
+            });
+        }
+
+        // Font Style handlers (placeholder)
+        for (int i = 0; i < fontStyleMenu.getItemCount(); i++) {
+            fontStyleMenu.getItem(i).addActionListener(e ->
+                    System.out.println("Font style: " + e.getActionCommand()));
+        }
+
+        // Font Size handlers (placeholder)
+        for (int i = 0; i < fontSizeMenu.getItemCount(); i++) {
+            fontSizeMenu.getItem(i).addActionListener(e ->
+                    System.out.println("Font size: " + e.getActionCommand()));
+        }
     }
 
     @Override
