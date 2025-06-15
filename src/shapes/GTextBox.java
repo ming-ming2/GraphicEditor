@@ -298,7 +298,6 @@ public class GTextBox extends GShape {
         AffineTransform shapeTransform = this.getAffineTransform();
         double[] matrix = new double[6];
         shapeTransform.getMatrix(matrix);
-
         double scaleX = Math.sqrt(matrix[0] * matrix[0] + matrix[1] * matrix[1]);
         double scaleY = Math.sqrt(matrix[2] * matrix[2] + matrix[3] * matrix[3]);
 
@@ -386,4 +385,5 @@ public class GTextBox extends GShape {
         updateWrappedLines();
         updateCursorPosition();
     }
+
 }

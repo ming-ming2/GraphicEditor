@@ -16,7 +16,6 @@ import java.io.*;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
-import javax.swing.JOptionPane;
 
 import global.GConstants;
 import global.GConstants.EShapeTool;
@@ -93,6 +92,7 @@ public class GDrawingPanel extends JPanel implements Printable {
 		saveCurrentState();
 		this.repaint();
 		this.removeAll();
+		shapes.removeLast();
 	}
 
 	public void setEShapeTool(EShapeTool eShapeTool) {
@@ -272,14 +272,36 @@ public class GDrawingPanel extends JPanel implements Printable {
 
 	public void group() {
 		List<GShape> selectedShapes = getSelectedShapes();
+
+		if (!canGroup()) {
+			return;
+		}
+
+		for (GShape shape : selectedShapes) {
+			if (shape instanceof GTextBox) {
+				return;
+			}
+		}
+
 		if (selectedShapes.size() > 1) {
+			isMultiTransform = false;
+
+			List<GShape> shapesToGroup = new ArrayList<>();
 			for (GShape shape : selectedShapes) {
+				if (!(shape instanceof GTextBox)) {
+					shapesToGroup.add(shape);
+				}
+			}
+
+			for (GShape shape : shapesToGroup) {
 				shape.setSelected(false);
 				shapes.remove(shape);
 			}
 
-			GGroup group = new GGroup(selectedShapes);
+			GGroup group = new GGroup(shapesToGroup);
 			shapes.add(group);
+
+			clearSelection();
 			group.setSelected(true);
 
 			saveCurrentState();
@@ -299,8 +321,10 @@ public class GDrawingPanel extends JPanel implements Printable {
 		}
 
 		if (!groupsToUngroup.isEmpty()) {
+			isMultiTransform = false;
+			clearSelection();
+
 			for (GGroup group : groupsToUngroup) {
-				group.setSelected(false);
 				group.ungroup();
 				List<GShape> children = group.getChildren();
 
@@ -319,7 +343,21 @@ public class GDrawingPanel extends JPanel implements Printable {
 	}
 
 	public boolean canGroup() {
-		return getSelectedShapes().size() > 1;
+		List<GShape> selectedShapes = getSelectedShapes();
+
+		// 선택된 도형이 2개 미만이면 그룹화 불가
+		if (selectedShapes.size() < 2) {
+			return false;
+		}
+
+		// 텍스트박스가 포함되어 있으면 그룹화 불가
+		for (GShape shape : selectedShapes) {
+			if (shape instanceof GTextBox) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public boolean canUngroup() {
@@ -448,7 +486,7 @@ public class GDrawingPanel extends JPanel implements Printable {
 				shape.getAffineTransform().preConcatenate(rotation);
 
 				if (shape instanceof GTextBox) {
-					normalizeTextBox(shape, centerX, centerY);
+					normalizeTextBox(shape);
 				}
 			}
 			saveCurrentState();
@@ -469,7 +507,7 @@ public class GDrawingPanel extends JPanel implements Printable {
 				shape.getAffineTransform().preConcatenate(rotation);
 
 				if (shape instanceof GTextBox) {
-					normalizeTextBox(shape, centerX, centerY);
+					normalizeTextBox(shape);
 				}
 			}
 			saveCurrentState();
@@ -492,7 +530,7 @@ public class GDrawingPanel extends JPanel implements Printable {
 				shape.getAffineTransform().preConcatenate(flip);
 
 				if (shape instanceof GTextBox) {
-					normalizeTextBox(shape, centerX, centerY);
+					normalizeTextBox(shape);
 				}
 			}
 			saveCurrentState();
@@ -515,7 +553,7 @@ public class GDrawingPanel extends JPanel implements Printable {
 				shape.getAffineTransform().preConcatenate(flip);
 
 				if (shape instanceof GTextBox) {
-					normalizeTextBox(shape, centerX, centerY);
+					normalizeTextBox(shape);
 				}
 			}
 			saveCurrentState();
@@ -525,12 +563,24 @@ public class GDrawingPanel extends JPanel implements Printable {
 	}
 
 
-	private void normalizeTextBox(GShape shape, double centerX, double centerY) {
+	private void normalizeTextBox(GShape shape) {
 		if (shape instanceof GTextBox) {
-			GMover gMover = new GMover((GTextBox) shape);
-			gMover.start((int) centerX, (int) centerY);
-			gMover.drag((int) (centerX+1), (int) (centerY+1));
-			repaint();
+			GTextBox textBox = (GTextBox) shape;
+
+			Rectangle2D transformedBounds = textBox.getTransformedShape().getBounds2D();
+			double screenCenterX = transformedBounds.getCenterX();
+			double screenCenterY = transformedBounds.getCenterY();
+
+			Point2D screenPoint = new Point2D.Double(screenCenterX, screenCenterY);
+			viewTransform.transform(screenPoint, screenPoint);
+
+			GMover gMover = new GMover(textBox);
+			gMover.start((int) screenPoint.getX(), (int) screenPoint.getY());
+			gMover.drag((int) screenPoint.getX() + 1, (int) screenPoint.getY());
+			gMover.drag((int) screenPoint.getX(), (int) screenPoint.getY());
+			gMover.finish((int) screenPoint.getX(), (int) screenPoint.getY());
+
+			textBox.forceUpdate();
 		}
 	}
 
@@ -934,51 +984,74 @@ public class GDrawingPanel extends JPanel implements Printable {
 	}
 
 	private void applyPrimaryTransformToOthers() {
-		AffineTransform currentPrimary = this.selectedShape.getAffineTransform();
-
-		double[] originalMatrix = new double[6];
-		double[] currentMatrix = new double[6];
-		primaryOriginal.getMatrix(originalMatrix);
-		currentPrimary.getMatrix(currentMatrix);
-
-		double deltaTranslateX = currentMatrix[4] - originalMatrix[4];
-		double deltaTranslateY = currentMatrix[5] - originalMatrix[5];
-
-		double originalScaleX = Math.sqrt(originalMatrix[0] * originalMatrix[0] + originalMatrix[1] * originalMatrix[1]);
-		double originalScaleY = Math.sqrt(originalMatrix[2] * originalMatrix[2] + originalMatrix[3] * originalMatrix[3]);
-		double currentScaleX = Math.sqrt(currentMatrix[0] * currentMatrix[0] + currentMatrix[1] * currentMatrix[1]);
-		double currentScaleY = Math.sqrt(currentMatrix[2] * currentMatrix[2] + currentMatrix[3] * currentMatrix[3]);
-
-		double scaleFactorX = currentScaleX / originalScaleX;
-		double scaleFactorY = currentScaleY / originalScaleY;
-
-		double originalAngle = Math.atan2(originalMatrix[1], originalMatrix[0]);
-		double currentAngle = Math.atan2(currentMatrix[1], currentMatrix[0]);
-		double deltaAngle = currentAngle - originalAngle;
-
 		EAnchor anchor = this.selectedShape.getESelectedAnchor();
 
-		List<GShape> selectedShapes = getSelectedShapes();
-		for (GShape otherShape : selectedShapes) {
-			if (otherShape != this.selectedShape) {
-				AffineTransform original = originalTransforms.get(otherShape);
-				AffineTransform newTransform = new AffineTransform(original);
+		if (anchor == EAnchor.eMM) {
+			Rectangle2D originalBounds = this.selectedShape.getTransformedShape().getBounds2D();
+			AffineTransform tempTransform = new AffineTransform(primaryOriginal);
+			Rectangle2D primaryOriginalBounds = tempTransform.createTransformedShape(this.selectedShape.getShape()).getBounds2D();
 
-				if (anchor == EAnchor.eMM) {
-					newTransform.translate(deltaTranslateX, deltaTranslateY);
-				} else if (anchor == EAnchor.eRR) {
+			double deltaX = originalBounds.getCenterX() - primaryOriginalBounds.getCenterX();
+			double deltaY = originalBounds.getCenterY() - primaryOriginalBounds.getCenterY();
+
+			List<GShape> selectedShapes = getSelectedShapes();
+			for (GShape otherShape : selectedShapes) {
+				if (otherShape != this.selectedShape) {
+					AffineTransform original = originalTransforms.get(otherShape);
+					AffineTransform newTransform = new AffineTransform(original);
+					newTransform.translate(deltaX, deltaY);
+					otherShape.getAffineTransform().setTransform(newTransform);
+				}
+			}
+		} else if (anchor == EAnchor.eRR) {
+			AffineTransform currentPrimary = this.selectedShape.getAffineTransform();
+			double[] originalMatrix = new double[6];
+			double[] currentMatrix = new double[6];
+			primaryOriginal.getMatrix(originalMatrix);
+			currentPrimary.getMatrix(currentMatrix);
+
+			double originalAngle = Math.atan2(originalMatrix[1], originalMatrix[0]);
+			double currentAngle = Math.atan2(currentMatrix[1], currentMatrix[0]);
+			double deltaAngle = currentAngle - originalAngle;
+
+			List<GShape> selectedShapes = getSelectedShapes();
+			for (GShape otherShape : selectedShapes) {
+				if (otherShape != this.selectedShape) {
+					AffineTransform original = originalTransforms.get(otherShape);
+					AffineTransform newTransform = new AffineTransform(original);
 					double centerX = otherShape.getShape().getBounds2D().getCenterX();
 					double centerY = otherShape.getShape().getBounds2D().getCenterY();
 					newTransform.rotate(deltaAngle, centerX, centerY);
-				} else {
+					otherShape.getAffineTransform().setTransform(newTransform);
+				}
+			}
+		} else {
+			AffineTransform currentPrimary = this.selectedShape.getAffineTransform();
+			double[] originalMatrix = new double[6];
+			double[] currentMatrix = new double[6];
+			primaryOriginal.getMatrix(originalMatrix);
+			currentPrimary.getMatrix(currentMatrix);
+
+			double originalScaleX = Math.sqrt(originalMatrix[0] * originalMatrix[0] + originalMatrix[1] * originalMatrix[1]);
+			double originalScaleY = Math.sqrt(originalMatrix[2] * originalMatrix[2] + originalMatrix[3] * originalMatrix[3]);
+			double currentScaleX = Math.sqrt(currentMatrix[0] * currentMatrix[0] + currentMatrix[1] * currentMatrix[1]);
+			double currentScaleY = Math.sqrt(currentMatrix[2] * currentMatrix[2] + currentMatrix[3] * currentMatrix[3]);
+
+			double scaleFactorX = currentScaleX / originalScaleX;
+			double scaleFactorY = currentScaleY / originalScaleY;
+
+			List<GShape> selectedShapes = getSelectedShapes();
+			for (GShape otherShape : selectedShapes) {
+				if (otherShape != this.selectedShape) {
+					AffineTransform original = originalTransforms.get(otherShape);
+					AffineTransform newTransform = new AffineTransform(original);
 					double centerX = otherShape.getShape().getBounds2D().getCenterX();
 					double centerY = otherShape.getShape().getBounds2D().getCenterY();
 					newTransform.translate(centerX, centerY);
 					newTransform.scale(scaleFactorX, scaleFactorY);
 					newTransform.translate(-centerX, -centerY);
+					otherShape.getAffineTransform().setTransform(newTransform);
 				}
-
-				otherShape.getAffineTransform().setTransform(newTransform);
 			}
 		}
 	}
