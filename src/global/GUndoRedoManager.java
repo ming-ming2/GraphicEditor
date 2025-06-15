@@ -9,7 +9,7 @@ import java.util.Vector;
 public class GUndoRedoManager {
     private List<Vector<GShape>> undoStack;
     private List<Vector<GShape>> redoStack;
-    private static final int MAX_UNDO_SIZE = 50;
+    private static final int MAX_UNDO_SIZE = GConstants.EClipboardConstants.eMaxUndoSize.getValue();
 
     public GUndoRedoManager() {
         undoStack = new ArrayList<>();

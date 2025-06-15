@@ -12,6 +12,8 @@ import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.util.ArrayList;
 import java.util.List;
+import global.GConstants;
+import global.GGraphicsProperties;
 
 public class GTextBox extends GShape {
     private Rectangle2D rectangle;
@@ -26,14 +28,17 @@ public class GTextBox extends GShape {
     private int cursorColumn;
     private int startX, startY;
 
-    private static final int CURSOR_BLINK_INTERVAL = 500;
-    private static final int PADDING = 5;
+    private static final int CURSOR_BLINK_INTERVAL = GConstants.ETextBoxConstants.eCursorBlinkInterval.getValue();
+    private static final int PADDING = GConstants.ETextBoxConstants.ePadding.getValue();
 
     public GTextBox() {
         super(new Rectangle2D.Float(0, 0, 0, 0));
         this.rectangle = (Rectangle2D) this.getShape();
         this.text = "";
-        this.font = new Font("Arial", Font.PLAIN, 14);
+
+        GGraphicsProperties props = GGraphicsProperties.getInstance();
+        this.font = props.createFont();
+
         this.isEditing = false;
         this.cursorPosition = 0;
         this.lastBlinkTime = System.currentTimeMillis();

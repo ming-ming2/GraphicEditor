@@ -43,6 +43,22 @@ public final class GConstants {
                         EShapeTool.setValues(node);
                     } else if (node.getNodeName().equals(ETextConstants.class.getSimpleName())) {
                         ETextConstants.setValues(node);
+                    } else if (node.getNodeName().equals(ECanvasConstants.class.getSimpleName())) {
+                        ECanvasConstants.setValues(node);
+                    } else if (node.getNodeName().equals(EShapeConstants.class.getSimpleName())) {
+                        EShapeConstants.setValues(node);
+                    } else if (node.getNodeName().equals(ETextBoxConstants.class.getSimpleName())) {
+                        ETextBoxConstants.setValues(node);
+                    } else if (node.getNodeName().equals(EGraphicsDefaults.class.getSimpleName())) {
+                        EGraphicsDefaults.setValues(node);
+                    } else if (node.getNodeName().equals(EFontSizes.class.getSimpleName())) {
+                        EFontSizes.setValues(node);
+                    } else if (node.getNodeName().equals(EClipboardConstants.class.getSimpleName())) {
+                        EClipboardConstants.setValues(node);
+                    } else if (node.getNodeName().equals(EMenuTexts.class.getSimpleName())) {
+                        EMenuTexts.setValues(node);
+                    } else if (node.getNodeName().equals(EDialogTexts.class.getSimpleName())) {
+                        EDialogTexts.setValues(node);
                     }
                 }
             }
@@ -362,6 +378,350 @@ public final class GConstants {
 
         public String getToolTipText() {
             return toolTipText;
+        }
+    }
+
+    public enum ECanvasConstants {
+        eBaseWidth(800),
+        eBaseHeight(600),
+        eZoomInFactor(1.2),
+        eZoomOutFactor(0.9),
+        eMinZoom(0.1),
+        eMaxZoom(10.0);
+
+        private double value;
+
+        ECanvasConstants(double value) {
+            this.value = value;
+        }
+
+        public static void setValues(Node node) {
+            for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+                try {
+                    Node element = node.getChildNodes().item(i);
+                    if (element.getNodeType() == Node.ELEMENT_NODE) {
+                        ECanvasConstants eCanvasConstants = ECanvasConstants.valueOf(element.getNodeName());
+                        Node valueAttr = element.getAttributes().getNamedItem("value");
+                        if (valueAttr != null) {
+                            eCanvasConstants.value = Double.parseDouble(valueAttr.getNodeValue());
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public double getValue() {
+            return value;
+        }
+
+        public int getIntValue() {
+            return (int) value;
+        }
+    }
+
+    public enum EShapeConstants {
+        eAnchorWidth(10),
+        eAnchorHeight(10),
+        eClickTolerance(8.0),
+        eRotationHandleOffset(30);
+
+        private double value;
+
+        EShapeConstants(double value) {
+            this.value = value;
+        }
+
+        public static void setValues(Node node) {
+            for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+                try {
+                    Node element = node.getChildNodes().item(i);
+                    if (element.getNodeType() == Node.ELEMENT_NODE) {
+                        EShapeConstants eShapeConstants = EShapeConstants.valueOf(element.getNodeName());
+                        Node valueAttr = element.getAttributes().getNamedItem("value");
+                        if (valueAttr != null) {
+                            eShapeConstants.value = Double.parseDouble(valueAttr.getNodeValue());
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public double getValue() {
+            return value;
+        }
+
+        public int getIntValue() {
+            return (int) value;
+        }
+
+        public float getFloatValue() {
+            return (float) value;
+        }
+    }
+
+    public enum ETextBoxConstants {
+        eCursorBlinkInterval(500),
+        ePadding(5);
+
+        private int value;
+
+        ETextBoxConstants(int value) {
+            this.value = value;
+        }
+
+        public static void setValues(Node node) {
+            for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+                try {
+                    Node element = node.getChildNodes().item(i);
+                    if (element.getNodeType() == Node.ELEMENT_NODE) {
+                        ETextBoxConstants eTextBoxConstants = ETextBoxConstants.valueOf(element.getNodeName());
+                        Node valueAttr = element.getAttributes().getNamedItem("value");
+                        if (valueAttr != null) {
+                            eTextBoxConstants.value = Integer.parseInt(valueAttr.getNodeValue());
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+
+    public enum EGraphicsDefaults {
+        eDefaultLineWidth(2.0f),
+        eDefaultFontSize(14),
+        eDefaultFontName("Arial"),
+        eThinLineWidth(1.0f),
+        eNormalLineWidth(2.0f),
+        eThickLineWidth(4.0f),
+        eDashPattern("10.0,5.0"),
+        eDotPattern("2.0,3.0");
+
+        private String value;
+
+        EGraphicsDefaults(String value) {
+            this.value = value;
+        }
+
+        EGraphicsDefaults(float value) {
+            this.value = String.valueOf(value);
+        }
+
+        EGraphicsDefaults(int value) {
+            this.value = String.valueOf(value);
+        }
+
+        public static void setValues(Node node) {
+            for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+                try {
+                    Node element = node.getChildNodes().item(i);
+                    if (element.getNodeType() == Node.ELEMENT_NODE) {
+                        EGraphicsDefaults eGraphicsDefaults = EGraphicsDefaults.valueOf(element.getNodeName());
+                        Node valueAttr = element.getAttributes().getNamedItem("value");
+                        if (valueAttr != null) {
+                            eGraphicsDefaults.value = valueAttr.getNodeValue();
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public float getFloatValue() {
+            return Float.parseFloat(value);
+        }
+
+        public int getIntValue() {
+            return Integer.parseInt(value);
+        }
+
+        public float[] getFloatArray() {
+            String[] parts = value.split(",");
+            float[] result = new float[parts.length];
+            for (int i = 0; i < parts.length; i++) {
+                result[i] = Float.parseFloat(parts[i].trim());
+            }
+            return result;
+        }
+    }
+
+    public enum EFontSizes {
+        eSize8(8), eSize10(10), eSize12(12), eSize14(14),
+        eSize16(16), eSize20(20), eSize24(24), eSize32(32);
+
+        private int value;
+
+        EFontSizes(int value) {
+            this.value = value;
+        }
+
+        public static void setValues(Node node) {
+            for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+                try {
+                    Node element = node.getChildNodes().item(i);
+                    if (element.getNodeType() == Node.ELEMENT_NODE) {
+                        EFontSizes eFontSizes = EFontSizes.valueOf(element.getNodeName());
+                        Node valueAttr = element.getAttributes().getNamedItem("value");
+                        if (valueAttr != null) {
+                            eFontSizes.value = Integer.parseInt(valueAttr.getNodeValue());
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static int[] getAllValues() {
+            EFontSizes[] sizes = EFontSizes.values();
+            int[] result = new int[sizes.length];
+            for (int i = 0; i < sizes.length; i++) {
+                result[i] = sizes[i].value;
+            }
+            return result;
+        }
+    }
+
+    public enum EClipboardConstants {
+        ePasteOffset(20),
+        eMaxUndoSize(50);
+
+        private int value;
+
+        EClipboardConstants(int value) {
+            this.value = value;
+        }
+
+        public static void setValues(Node node) {
+            for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+                try {
+                    Node element = node.getChildNodes().item(i);
+                    if (element.getNodeType() == Node.ELEMENT_NODE) {
+                        EClipboardConstants eClipboardConstants = EClipboardConstants.valueOf(element.getNodeName());
+                        Node valueAttr = element.getAttributes().getNamedItem("value");
+                        if (valueAttr != null) {
+                            eClipboardConstants.value = Integer.parseInt(valueAttr.getNodeValue());
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+
+    public enum EMenuTexts {
+        eFileMenu("파일"),
+        eEditMenu("편집"),
+        eViewMenu("보기"),
+        eGraphicMenu("그래픽"),
+        eLineWidthMenu("선 두께"),
+        eLineStyleMenu("선 스타일"),
+        eFontStyleMenu("글자 스타일"),
+        eFontSizeMenu("글자 크기"),
+        eLineColorItem("선 색상..."),
+        eFillColorItem("채우기 색상..."),
+        eThinLine("얇게"),
+        eNormalLine("보통"),
+        eThickLine("굵게"),
+        eSolidLine("실선"),
+        eDashedLine("점선"),
+        eDottedLine("점점선"),
+        ePlainFont("표준"),
+        eBoldFont("굵게"),
+        eItalicFont("기울임"),
+        eBoldItalicFont("굵은기울임"),
+        eZoomIn("확대"),
+        eZoomOut("축소"),
+        eResetZoom("원본크기 (100%)"),
+        eSelectLineColor("선 색상 선택"),
+        eSelectFillColor("채우기 색상 선택");
+
+        private String value;
+
+        EMenuTexts(String value) {
+            this.value = value;
+        }
+
+        public static void setValues(Node node) {
+            for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+                try {
+                    Node element = node.getChildNodes().item(i);
+                    if (element.getNodeType() == Node.ELEMENT_NODE) {
+                        EMenuTexts eMenuTexts = EMenuTexts.valueOf(element.getNodeName());
+                        Node valueAttr = element.getAttributes().getNamedItem("value");
+                        if (valueAttr != null) {
+                            eMenuTexts.value = valueAttr.getNodeValue();
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
+    public enum EDialogTexts {
+        eSaveConfirm("변경된 내용이 있습니다. 저장하시겠습니까?"),
+        eQuitConfirm("정말로 종료하시겠습니까?"),
+        eCloseConfirm("종료 확인"),
+        ePrintError("프린트 오류"),
+        eFileOpenError("파일을 열 수 없습니다: "),
+        eFileSaveError("파일을 저장할 수 없습니다: "),
+        eErrorTitle("오류"),
+        eCannotFindIcon("아이콘 파일을 찾을 수 없습니다: /rsc/icon.jpg"),
+        eIconLoadFailed("아이콘 로드 실패: ");
+
+        private String value;
+
+        EDialogTexts(String value) {
+            this.value = value;
+        }
+
+        public static void setValues(Node node) {
+            for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+                try {
+                    Node element = node.getChildNodes().item(i);
+                    if (element.getNodeType() == Node.ELEMENT_NODE) {
+                        EDialogTexts eDialogTexts = EDialogTexts.valueOf(element.getNodeName());
+                        Node valueAttr = element.getAttributes().getNamedItem("value");
+                        if (valueAttr != null) {
+                            eDialogTexts.value = valueAttr.getNodeValue();
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public String getValue() {
+            return value;
         }
     }
 }

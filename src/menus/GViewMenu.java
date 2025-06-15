@@ -10,6 +10,7 @@ import javax.swing.KeyStroke;
 
 import frames.GComponent;
 import frames.GDrawingPanel;
+import global.GConstants;
 
 public class GViewMenu extends JMenu implements GComponent {
     private static final long serialVersionUID = 1L;
@@ -21,7 +22,7 @@ public class GViewMenu extends JMenu implements GComponent {
     private GDrawingPanel drawingPanel;
 
     public GViewMenu() {
-        super("View");
+        super(GConstants.EMenuTexts.eViewMenu.getValue());
         this.createComponents();
         this.setAttributes();
         this.arrangeComponents();
@@ -30,9 +31,9 @@ public class GViewMenu extends JMenu implements GComponent {
 
     @Override
     public void createComponents() {
-        zoomInMenuItem = new JMenuItem("Zoom In");
-        zoomOutMenuItem = new JMenuItem("Zoom Out");
-        zoomResetMenuItem = new JMenuItem("Reset Zoom (100%)");
+        zoomInMenuItem = new JMenuItem(GConstants.EMenuTexts.eZoomIn.getValue());
+        zoomOutMenuItem = new JMenuItem(GConstants.EMenuTexts.eZoomOut.getValue());
+        zoomResetMenuItem = new JMenuItem(GConstants.EMenuTexts.eResetZoom.getValue());
     }
 
     @Override

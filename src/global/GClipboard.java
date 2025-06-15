@@ -9,7 +9,7 @@ public class GClipboard {
     private static GClipboard instance;
     private List<GShape> clipboardShapes;
     private int pasteCount;
-    private static final int PASTE_OFFSET = 20;
+    private static final int PASTE_OFFSET = GConstants.EClipboardConstants.ePasteOffset.getValue();
 
     private GClipboard() {
         clipboardShapes = new ArrayList<>();

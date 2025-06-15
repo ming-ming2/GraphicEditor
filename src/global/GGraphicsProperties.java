@@ -9,10 +9,13 @@ public class GGraphicsProperties {
         SOLID, DASHED, DOTTED
     }
 
-    private float lineWidth = 2.0f;
+    private float lineWidth = GConstants.EGraphicsDefaults.eDefaultLineWidth.getFloatValue();
     private LineStyle lineStyle = LineStyle.SOLID;
     private Color lineColor = Color.BLACK;
     private Color fillColor = Color.WHITE;
+    private String fontName = GConstants.EGraphicsDefaults.eDefaultFontName.getValue();
+    private int fontSize = GConstants.EGraphicsDefaults.eDefaultFontSize.getIntValue();
+    private int fontStyle = Font.PLAIN;
 
     private GGraphicsProperties() {}
 
@@ -55,13 +58,41 @@ public class GGraphicsProperties {
         this.fillColor = fillColor;
     }
 
+    public String getFontName() {
+        return fontName;
+    }
+
+    public void setFontName(String fontName) {
+        this.fontName = fontName;
+    }
+
+    public int getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(int fontSize) {
+        this.fontSize = fontSize;
+    }
+
+    public int getFontStyle() {
+        return fontStyle;
+    }
+
+    public void setFontStyle(int fontStyle) {
+        this.fontStyle = fontStyle;
+    }
+
+    public Font createFont() {
+        return new Font(fontName, fontStyle, fontSize);
+    }
+
     public Stroke createStroke() {
         switch (lineStyle) {
             case DASHED:
-                float[] dashPattern = {10.0f, 5.0f};
+                float[] dashPattern = GConstants.EGraphicsDefaults.eDashPattern.getFloatArray();
                 return new BasicStroke(lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, dashPattern, 0);
             case DOTTED:
-                float[] dotPattern = {2.0f, 3.0f};
+                float[] dotPattern = GConstants.EGraphicsDefaults.eDotPattern.getFloatArray();
                 return new BasicStroke(lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, dotPattern, 0);
             case SOLID:
             default:

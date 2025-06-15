@@ -45,4 +45,92 @@
         <eDefaultFontName value="Arial" />
         <eDefaultFontSize value="20" />
     </ETextConstants>
+
+    <ECanvasConstants>
+        <eBaseWidth value="800" />
+        <eBaseHeight value="600" />
+        <eZoomInFactor value="1.2" />
+        <eZoomOutFactor value="0.9" />
+        <eMinZoom value="0.1" />
+        <eMaxZoom value="10.0" />
+    </ECanvasConstants>
+
+    <EShapeConstants>
+        <eAnchorWidth value="10" />
+        <eAnchorHeight value="10" />
+        <eClickTolerance value="8.0" />
+        <eRotationHandleOffset value="30" />
+    </EShapeConstants>
+
+    <ETextBoxConstants>
+        <eCursorBlinkInterval value="500" />
+        <ePadding value="5" />
+    </ETextBoxConstants>
+
+    <EGraphicsDefaults>
+        <eDefaultLineWidth value="2.0" />
+        <eDefaultFontSize value="14" />
+        <eDefaultFontName value="Arial" />
+        <eThinLineWidth value="1.0" />
+        <eNormalLineWidth value="2.0" />
+        <eThickLineWidth value="4.0" />
+        <eDashPattern value="10.0,5.0" />
+        <eDotPattern value="2.0,3.0" />
+    </EGraphicsDefaults>
+
+    <EFontSizes>
+        <eSize8 value="8" />
+        <eSize10 value="10" />
+        <eSize12 value="12" />
+        <eSize14 value="14" />
+        <eSize16 value="16" />
+        <eSize20 value="20" />
+        <eSize24 value="24" />
+        <eSize32 value="32" />
+    </EFontSizes>
+
+    <EClipboardConstants>
+        <ePasteOffset value="20" />
+        <eMaxUndoSize value="50" />
+    </EClipboardConstants>
+
+    <EMenuTexts>
+        <eFileMenu value="파일" />
+        <eEditMenu value="편집" />
+        <eViewMenu value="보기" />
+        <eGraphicMenu value="그래픽" />
+        <eLineWidthMenu value="선 두께" />
+        <eLineStyleMenu value="선 스타일" />
+        <eFontStyleMenu value="글자 스타일" />
+        <eFontSizeMenu value="글자 크기" />
+        <eLineColorItem value="선 색상..." />
+        <eFillColorItem value="채우기 색상..." />
+        <eThinLine value="얇게" />
+        <eNormalLine value="보통" />
+        <eThickLine value="굵게" />
+        <eSolidLine value="실선" />
+        <eDashedLine value="점선" />
+        <eDottedLine value="점점선" />
+        <ePlainFont value="표준" />
+        <eBoldFont value="굵게" />
+        <eItalicFont value="기울임" />
+        <eBoldItalicFont value="굵은기울임" />
+        <eZoomIn value="확대" />
+        <eZoomOut value="축소" />
+        <eResetZoom value="원본크기 (100%)" />
+        <eSelectLineColor value="선 색상 선택" />
+        <eSelectFillColor value="채우기 색상 선택" />
+    </EMenuTexts>
+
+    <EDialogTexts>
+        <eSaveConfirm value="변경된 내용이 있습니다. 저장하시겠습니까?" />
+        <eQuitConfirm value="정말로 종료하시겠습니까?" />
+        <eCloseConfirm value="종료 확인" />
+        <ePrintError value="프린트 오류" />
+        <eFileOpenError value="파일을 열 수 없습니다: " />
+        <eFileSaveError value="파일을 저장할 수 없습니다: " />
+        <eErrorTitle value="오류" />
+        <eCannotFindIcon value="아이콘 파일을 찾을 수 없습니다: /rsc/icon.jpg" />
+        <eIconLoadFailed value="아이콘 로드 실패: " />
+    </EDialogTexts>
 </GConstants>

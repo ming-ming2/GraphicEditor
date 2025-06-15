@@ -51,17 +51,16 @@ public class GMainFrame extends JFrame implements GComponent {
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.setLayout(new BorderLayout());
 
-		// 프로그램 아이콘 설정
 		try {
 			InputStream iconStream = getClass().getResourceAsStream("/rsc/icon.jpg");
 			if (iconStream != null) {
 				Image icon = ImageIO.read(iconStream);
 				this.setIconImage(icon);
 			} else {
-				System.out.println("아이콘 파일을 찾을 수 없습니다: /rsc/icon.jpg");
+				System.out.println(GConstants.EDialogTexts.eCannotFindIcon.getValue());
 			}
 		} catch (Exception e) {
-			System.out.println("아이콘 로드 실패: " + e.getMessage());
+			System.out.println(GConstants.EDialogTexts.eIconLoadFailed.getValue() + e.getMessage());
 		}
 
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -69,7 +68,10 @@ public class GMainFrame extends JFrame implements GComponent {
 		scrollPane.getViewport().setBackground(Color.WHITE);
 
 		drawingPanel.setBackground(Color.WHITE);
-		drawingPanel.setPreferredSize(new Dimension(800, 600));
+		drawingPanel.setPreferredSize(new Dimension(
+				GConstants.ECanvasConstants.eBaseWidth.getIntValue(),
+				GConstants.ECanvasConstants.eBaseHeight.getIntValue()
+		));
 	}
 
 	@Override
@@ -92,8 +94,8 @@ public class GMainFrame extends JFrame implements GComponent {
 		if(this.drawingPanel.isUpdated()) {
 			int option = JOptionPane.showConfirmDialog(
 					this,
-					"변경된 내용이 있습니다. 저장하시겠습니까?",
-					"종료 확인",
+					GConstants.EDialogTexts.eSaveConfirm.getValue(),
+					GConstants.EDialogTexts.eCloseConfirm.getValue(),
 					JOptionPane.YES_NO_CANCEL_OPTION,
 					JOptionPane.QUESTION_MESSAGE
 			);
@@ -107,8 +109,8 @@ public class GMainFrame extends JFrame implements GComponent {
 		} else {
 			int option = JOptionPane.showConfirmDialog(
 					this,
-					"정말로 종료하시겠습니까?",
-					"종료 확인",
+					GConstants.EDialogTexts.eQuitConfirm.getValue(),
+					GConstants.EDialogTexts.eCloseConfirm.getValue(),
 					JOptionPane.YES_NO_OPTION,
 					JOptionPane.QUESTION_MESSAGE
 			);

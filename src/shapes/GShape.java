@@ -14,13 +14,13 @@ import java.io.Serializable;
 import static global.GConstants.*;
 
 public abstract class GShape implements Serializable {
-    private final static int ANCHOR_WIDTH = 10;
-    private final static int ANCHOR_HEIGHT = 10;
+    private final static int ANCHOR_WIDTH = GConstants.EShapeConstants.eAnchorWidth.getIntValue();
+    private final static int ANCHOR_HEIGHT = GConstants.EShapeConstants.eAnchorHeight.getIntValue();
     private final AffineTransform affineTransform;
     private Shape shape;
     private Ellipse2D[] anchors;
     private boolean bSelected;
-    private EAnchor eSelectedAnchor;
+    protected EAnchor eSelectedAnchor;
 
     private float lineWidth;
     private GGraphicsProperties.LineStyle lineStyle;
@@ -133,7 +133,7 @@ public abstract class GShape implements Serializable {
                 case eSW: anchorLocalPos.setLocation(bx, by + bh); break;
                 case eEE: anchorLocalPos.setLocation(bx + bw, by + bh / 2); break;
                 case eWW: anchorLocalPos.setLocation(bx, by + bh / 2); break;
-                case eRR: anchorLocalPos.setLocation(bx + bw / 2, by - 30); break;
+                case eRR: anchorLocalPos.setLocation(bx + bw / 2, by - GConstants.EShapeConstants.eRotationHandleOffset.getValue()); break;
             }
 
             this.affineTransform.transform(anchorLocalPos, anchorScreenPos);
@@ -157,14 +157,19 @@ public abstract class GShape implements Serializable {
         Stroke originalStroke = graphics2D.getStroke();
         Color originalColor = graphics2D.getColor();
 
+        if (fillColor != null && !fillColor.equals(Color.WHITE)) {
+            graphics2D.setColor(fillColor);
+            graphics2D.fill(transformedShape);
+        }
+
         Stroke lineStroke;
         switch (lineStyle) {
             case DASHED:
-                float[] dashPattern = {10.0f, 5.0f};
+                float[] dashPattern = GConstants.EGraphicsDefaults.eDashPattern.getFloatArray();
                 lineStroke = new BasicStroke(lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, dashPattern, 0);
                 break;
             case DOTTED:
-                float[] dotPattern = {2.0f, 3.0f};
+                float[] dotPattern = GConstants.EGraphicsDefaults.eDotPattern.getFloatArray();
                 lineStroke = new BasicStroke(lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, dotPattern, 0);
                 break;
             case SOLID:

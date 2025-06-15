@@ -54,8 +54,8 @@ public class GDrawingPanel extends JPanel implements Printable {
 	private double zoomLevel = 1.0;
 	private AffineTransform viewTransform;
 	private JScrollPane parentScrollPane;
-	private static final int BASE_CANVAS_WIDTH = 800;
-	private static final int BASE_CANVAS_HEIGHT = 600;
+	private static final int BASE_CANVAS_WIDTH = GConstants.ECanvasConstants.eBaseWidth.getIntValue();
+	private static final int BASE_CANVAS_HEIGHT = GConstants.ECanvasConstants.eBaseHeight.getIntValue();
 
 	public GDrawingPanel() {
 		MouseHandler mouseHandler = new MouseHandler();
@@ -199,13 +199,11 @@ public class GDrawingPanel extends JPanel implements Printable {
 	public void group() {
 		List<GShape> selectedShapes = getSelectedShapes();
 		if (selectedShapes.size() > 1) {
-			// 선택된 도형들의 선택 상태 해제
 			for (GShape shape : selectedShapes) {
 				shape.setSelected(false);
 				shapes.remove(shape);
 			}
 
-			// 그룹 생성 및 추가
 			GGroup group = new GGroup(selectedShapes);
 			shapes.add(group);
 			group.setSelected(true);
@@ -284,6 +282,64 @@ public class GDrawingPanel extends JPanel implements Printable {
 		}
 	}
 
+	public void applyLineColorToSelected(Color lineColor) {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (!selectedShapes.isEmpty()) {
+			for (GShape shape : selectedShapes) {
+				shape.setLineColor(lineColor);
+			}
+			saveCurrentState();
+			this.bUpdated = true;
+			this.repaint();
+		}
+	}
+
+	public void applyFillColorToSelected(Color fillColor) {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (!selectedShapes.isEmpty()) {
+			for (GShape shape : selectedShapes) {
+				shape.setFillColor(fillColor);
+			}
+			saveCurrentState();
+			this.bUpdated = true;
+			this.repaint();
+		}
+	}
+
+	public void applyFontSizeToSelected(int fontSize) {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (!selectedShapes.isEmpty()) {
+			for (GShape shape : selectedShapes) {
+				if (shape instanceof GTextBox) {
+					GTextBox textBox = (GTextBox) shape;
+					Font currentFont = textBox.getFont();
+					Font newFont = new Font(currentFont.getName(), currentFont.getStyle(), fontSize);
+					textBox.setFont(newFont);
+				}
+			}
+			saveCurrentState();
+			this.bUpdated = true;
+			this.repaint();
+		}
+	}
+
+	public void applyFontStyleToSelected(int fontStyle) {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (!selectedShapes.isEmpty()) {
+			for (GShape shape : selectedShapes) {
+				if (shape instanceof GTextBox) {
+					GTextBox textBox = (GTextBox) shape;
+					Font currentFont = textBox.getFont();
+					Font newFont = new Font(currentFont.getName(), fontStyle, currentFont.getSize());
+					textBox.setFont(newFont);
+				}
+			}
+			saveCurrentState();
+			this.bUpdated = true;
+			this.repaint();
+		}
+	}
+
 	public void printPanel() {
 		PrinterJob printerJob = PrinterJob.getPrinterJob();
 		printerJob.setPrintable(this);
@@ -293,8 +349,8 @@ public class GDrawingPanel extends JPanel implements Printable {
 				printerJob.print();
 			} catch (PrinterException e) {
 				javax.swing.JOptionPane.showMessageDialog(this,
-						"프린트 오류: " + e.getMessage(),
-						"프린트 오류",
+						GConstants.EDialogTexts.ePrintError.getValue() + ": " + e.getMessage(),
+						GConstants.EDialogTexts.ePrintError.getValue(),
 						javax.swing.JOptionPane.ERROR_MESSAGE);
 			}
 		}
@@ -345,14 +401,14 @@ public class GDrawingPanel extends JPanel implements Printable {
 	}
 
 	public void zoomIn() {
-		zoomLevel *= 1.2;
+		zoomLevel *= GConstants.ECanvasConstants.eZoomInFactor.getValue();
 		updateViewTransform();
 		updatePreferredSize();
 		this.repaint();
 	}
 
 	public void zoomOut() {
-		zoomLevel /= 1.2;
+		zoomLevel /= GConstants.ECanvasConstants.eZoomInFactor.getValue();
 		updateViewTransform();
 		updatePreferredSize();
 		this.repaint();
@@ -368,33 +424,29 @@ public class GDrawingPanel extends JPanel implements Printable {
 	public void zoom(double factor, int centerX, int centerY) {
 		if (parentScrollPane == null) return;
 
-		// 현재 스크롤 위치
 		int scrollX = parentScrollPane.getHorizontalScrollBar().getValue();
 		int scrollY = parentScrollPane.getVerticalScrollBar().getValue();
 
-		// 뷰포트 내에서의 마우스 위치
 		int viewportX = centerX;
 		int viewportY = centerY;
 
-		// 캔버스 절대 좌표에서의 마우스 위치
 		double canvasX = (scrollX + viewportX) / zoomLevel;
 		double canvasY = (scrollY + viewportY) / zoomLevel;
 
-		// 줌 레벨 변경
 		double oldZoomLevel = zoomLevel;
 		zoomLevel *= factor;
-		if (zoomLevel < 0.1) zoomLevel = 0.1;
-		if (zoomLevel > 10.0) zoomLevel = 10.0;
+		if (zoomLevel < GConstants.ECanvasConstants.eMinZoom.getValue())
+			zoomLevel = GConstants.ECanvasConstants.eMinZoom.getValue();
+		if (zoomLevel > GConstants.ECanvasConstants.eMaxZoom.getValue())
+			zoomLevel = GConstants.ECanvasConstants.eMaxZoom.getValue();
 
 		updateViewTransform();
 		updatePreferredSize();
 
-		// 새로운 스크롤 위치 계산
 		SwingUtilities.invokeLater(() -> {
 			int newScrollX = (int)(canvasX * zoomLevel - viewportX);
 			int newScrollY = (int)(canvasY * zoomLevel - viewportY);
 
-			// 스크롤 범위 제한
 			newScrollX = Math.max(0, Math.min(newScrollX, parentScrollPane.getHorizontalScrollBar().getMaximum() - parentScrollPane.getHorizontalScrollBar().getVisibleAmount()));
 			newScrollY = Math.max(0, Math.min(newScrollY, parentScrollPane.getVerticalScrollBar().getMaximum() - parentScrollPane.getVerticalScrollBar().getVisibleAmount()));
 
@@ -603,11 +655,9 @@ public class GDrawingPanel extends JPanel implements Printable {
 		primaryOriginal.getMatrix(originalMatrix);
 		currentPrimary.getMatrix(currentMatrix);
 
-		// 이동량만 계산
 		double deltaTranslateX = currentMatrix[4] - originalMatrix[4];
 		double deltaTranslateY = currentMatrix[5] - originalMatrix[5];
 
-		// 스케일 변화량 계산
 		double originalScaleX = Math.sqrt(originalMatrix[0] * originalMatrix[0] + originalMatrix[1] * originalMatrix[1]);
 		double originalScaleY = Math.sqrt(originalMatrix[2] * originalMatrix[2] + originalMatrix[3] * originalMatrix[3]);
 		double currentScaleX = Math.sqrt(currentMatrix[0] * currentMatrix[0] + currentMatrix[1] * currentMatrix[1]);
@@ -616,7 +666,6 @@ public class GDrawingPanel extends JPanel implements Printable {
 		double scaleFactorX = currentScaleX / originalScaleX;
 		double scaleFactorY = currentScaleY / originalScaleY;
 
-		// 회전 변화량 계산
 		double originalAngle = Math.atan2(originalMatrix[1], originalMatrix[0]);
 		double currentAngle = Math.atan2(currentMatrix[1], currentMatrix[0]);
 		double deltaAngle = currentAngle - originalAngle;
@@ -630,15 +679,12 @@ public class GDrawingPanel extends JPanel implements Printable {
 				AffineTransform newTransform = new AffineTransform(original);
 
 				if (anchor == EAnchor.eMM) {
-					// 이동만 적용
 					newTransform.translate(deltaTranslateX, deltaTranslateY);
 				} else if (anchor == EAnchor.eRR) {
-					// 회전만 적용 (각 도형의 중심 기준)
 					double centerX = otherShape.getShape().getBounds2D().getCenterX();
 					double centerY = otherShape.getShape().getBounds2D().getCenterY();
 					newTransform.rotate(deltaAngle, centerX, centerY);
 				} else {
-					// 리사이징만 적용 (각 도형의 중심 기준)
 					double centerX = otherShape.getShape().getBounds2D().getCenterX();
 					double centerY = otherShape.getShape().getBounds2D().getCenterY();
 					newTransform.translate(centerX, centerY);
@@ -846,7 +892,6 @@ public class GDrawingPanel extends JPanel implements Printable {
 				ctrlPressed = true;
 			}
 
-			// 다중 선택된 도형들 회전 테스트용
 			if (e.getKeyCode() == KeyEvent.VK_R && hasMultipleSelection()) {
 				List<GShape> selectedShapes = getSelectedShapes();
 				for (GShape shape : selectedShapes) {
@@ -907,9 +952,9 @@ public class GDrawingPanel extends JPanel implements Printable {
 			if (ctrlPressed) {
 				int rotation = e.getWheelRotation();
 				if (rotation < 0) {
-					zoom(1.1, e.getX(), e.getY());
+					zoom(GConstants.ECanvasConstants.eZoomInFactor.getValue(), e.getX(), e.getY());
 				} else {
-					zoom(0.9, e.getX(), e.getY());
+					zoom(GConstants.ECanvasConstants.eZoomOutFactor.getValue(), e.getX(), e.getY());
 				}
 			}
 		}

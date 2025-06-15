@@ -20,7 +20,7 @@ public class GFileMenu extends JMenu implements GComponent {
 	private File dir;
 
 	public GFileMenu() {
-		super("File");
+		super(GConstants.EMenuTexts.eFileMenu.getValue());
 		this.createComponents();
 		this.setAttributes();
 		this.arrangeComponents();
@@ -59,10 +59,25 @@ public class GFileMenu extends JMenu implements GComponent {
 	}
 
 	public void newPanel(){
-		if(this.close()) {
+		if(this.checkAndSave()) {
 			this.file = null;
 			this.drawingPanel.initialize();
 		}
+	}
+
+	private boolean checkAndSave() {
+		if(this.drawingPanel.isUpdated()) {
+			int reply = JOptionPane.showConfirmDialog(this.drawingPanel, GConstants.EDialogTexts.eSaveConfirm.getValue());
+			if(reply == JOptionPane.YES_OPTION) {
+				this.save();
+				return true;
+			} else if(reply == JOptionPane.NO_OPTION) {
+				return true;
+			} else if(reply == JOptionPane.CANCEL_OPTION) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public void open(){
@@ -78,7 +93,7 @@ public class GFileMenu extends JMenu implements GComponent {
 				this.file = selectedFile;
 				this.drawingPanel.setBUpdated(false);
 			} catch (Exception e) {
-				JOptionPane.showMessageDialog(this, "파일을 열 수 없습니다: " + e.getMessage(), "오류", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, GConstants.EDialogTexts.eFileOpenError.getValue() + e.getMessage(), GConstants.EDialogTexts.eErrorTitle.getValue(), JOptionPane.ERROR_MESSAGE);
 			}
 		}
 	}
@@ -109,7 +124,7 @@ public class GFileMenu extends JMenu implements GComponent {
 				}
 			}
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(this, "파일을 저장할 수 없습니다: " + e.getMessage(), "오류", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, GConstants.EDialogTexts.eFileSaveError.getValue() + e.getMessage(), GConstants.EDialogTexts.eErrorTitle.getValue(), JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -119,7 +134,7 @@ public class GFileMenu extends JMenu implements GComponent {
 			this.drawingPanel.setBUpdated(false);
 			return true;
 		} catch (IOException e) {
-			JOptionPane.showMessageDialog(this, "파일을 저장할 수 없습니다: " + e.getMessage(), "오류", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, GConstants.EDialogTexts.eFileSaveError.getValue() + e.getMessage(), GConstants.EDialogTexts.eErrorTitle.getValue(), JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
 	}
@@ -127,7 +142,7 @@ public class GFileMenu extends JMenu implements GComponent {
 	public boolean close(){
 		boolean bCancel = false;
 		if(this.drawingPanel.isUpdated()) {
-			int reply = JOptionPane.showConfirmDialog(this.drawingPanel,"변경 내용을 저장할까요?");
+			int reply = JOptionPane.showConfirmDialog(this.drawingPanel, GConstants.EDialogTexts.eSaveConfirm.getValue());
 			if(reply == JOptionPane.YES_OPTION) {
 				this.save();
 			} else if(reply == JOptionPane.NO_OPTION) {

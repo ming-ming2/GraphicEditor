@@ -1,14 +1,17 @@
 package menus;
 
 import java.awt.Font;
+import java.awt.Color;
 import java.awt.event.ActionListener;
 
+import javax.swing.JColorChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 
 import frames.GComponent;
 import frames.GDrawingPanel;
+import global.GConstants;
 import global.GGraphicsProperties;
 
 public class GGraphicMenu extends JMenu implements GComponent {
@@ -18,11 +21,13 @@ public class GGraphicMenu extends JMenu implements GComponent {
     private JMenu lineStyleMenu;
     private JMenu fontStyleMenu;
     private JMenu fontSizeMenu;
+    private JMenuItem lineColorItem;
+    private JMenuItem fillColorItem;
 
     private GDrawingPanel drawingPanel;
 
     public GGraphicMenu() {
-        super("Graphic");
+        super(GConstants.EMenuTexts.eGraphicMenu.getValue());
         this.createComponents();
         this.setAttributes();
         this.arrangeComponents();
@@ -31,56 +36,50 @@ public class GGraphicMenu extends JMenu implements GComponent {
 
     @Override
     public void createComponents() {
-        lineWidthMenu = new JMenu("Line Width");
-        lineStyleMenu = new JMenu("Line Style");
-        fontStyleMenu = new JMenu("Font Style");
-        fontSizeMenu = new JMenu("Font Size");
+        lineWidthMenu = new JMenu(GConstants.EMenuTexts.eLineWidthMenu.getValue());
+        lineStyleMenu = new JMenu(GConstants.EMenuTexts.eLineStyleMenu.getValue());
+        fontStyleMenu = new JMenu(GConstants.EMenuTexts.eFontStyleMenu.getValue());
+        fontSizeMenu = new JMenu(GConstants.EMenuTexts.eFontSizeMenu.getValue());
+        lineColorItem = new JMenuItem(GConstants.EMenuTexts.eLineColorItem.getValue());
+        fillColorItem = new JMenuItem(GConstants.EMenuTexts.eFillColorItem.getValue());
 
-        JMenuItem thinLineItem = new JMenuItem("Thin (1px)");
-        JMenuItem normalLineItem = new JMenuItem("Normal (2px)");
-        JMenuItem thickLineItem = new JMenuItem("Thick (4px)");
+        JMenuItem thinLineItem = new JMenuItem(GConstants.EMenuTexts.eThinLine.getValue() + " (" + GConstants.EGraphicsDefaults.eThinLineWidth.getValue() + "px)");
+        JMenuItem normalLineItem = new JMenuItem(GConstants.EMenuTexts.eNormalLine.getValue() + " (" + GConstants.EGraphicsDefaults.eNormalLineWidth.getValue() + "px)");
+        JMenuItem thickLineItem = new JMenuItem(GConstants.EMenuTexts.eThickLine.getValue() + " (" + GConstants.EGraphicsDefaults.eThickLineWidth.getValue() + "px)");
         lineWidthMenu.add(thinLineItem);
         lineWidthMenu.add(normalLineItem);
         lineWidthMenu.add(thickLineItem);
 
-        JMenuItem solidLineItem = new JMenuItem("Solid");
-        JMenuItem dashedLineItem = new JMenuItem("Dashed");
-        JMenuItem dottedLineItem = new JMenuItem("Dotted");
+        JMenuItem solidLineItem = new JMenuItem(GConstants.EMenuTexts.eSolidLine.getValue());
+        JMenuItem dashedLineItem = new JMenuItem(GConstants.EMenuTexts.eDashedLine.getValue());
+        JMenuItem dottedLineItem = new JMenuItem(GConstants.EMenuTexts.eDottedLine.getValue());
         lineStyleMenu.add(solidLineItem);
         lineStyleMenu.add(dashedLineItem);
         lineStyleMenu.add(dottedLineItem);
 
-        JMenuItem plainFontItem = new JMenuItem("Plain");
-        JMenuItem boldFontItem = new JMenuItem("Bold");
-        JMenuItem italicFontItem = new JMenuItem("Italic");
-        JMenuItem boldItalicFontItem = new JMenuItem("Bold Italic");
+        JMenuItem plainFontItem = new JMenuItem(GConstants.EMenuTexts.ePlainFont.getValue());
+        JMenuItem boldFontItem = new JMenuItem(GConstants.EMenuTexts.eBoldFont.getValue());
+        JMenuItem italicFontItem = new JMenuItem(GConstants.EMenuTexts.eItalicFont.getValue());
+        JMenuItem boldItalicFontItem = new JMenuItem(GConstants.EMenuTexts.eBoldItalicFont.getValue());
         fontStyleMenu.add(plainFontItem);
         fontStyleMenu.add(boldFontItem);
         fontStyleMenu.add(italicFontItem);
         fontStyleMenu.add(boldItalicFontItem);
 
-        JMenuItem size8Item = new JMenuItem("8pt");
-        JMenuItem size10Item = new JMenuItem("10pt");
-        JMenuItem size12Item = new JMenuItem("12pt");
-        JMenuItem size14Item = new JMenuItem("14pt");
-        JMenuItem size16Item = new JMenuItem("16pt");
-        JMenuItem size20Item = new JMenuItem("20pt");
-        JMenuItem size24Item = new JMenuItem("24pt");
-        JMenuItem size32Item = new JMenuItem("32pt");
-        fontSizeMenu.add(size8Item);
-        fontSizeMenu.add(size10Item);
-        fontSizeMenu.add(size12Item);
-        fontSizeMenu.add(size14Item);
-        fontSizeMenu.add(size16Item);
-        fontSizeMenu.add(size20Item);
-        fontSizeMenu.add(size24Item);
-        fontSizeMenu.add(size32Item);
+        int[] fontSizes = GConstants.EFontSizes.getAllValues();
+        for (int size : fontSizes) {
+            JMenuItem sizeItem = new JMenuItem(size + "pt");
+            fontSizeMenu.add(sizeItem);
+        }
     }
 
     @Override
     public void arrangeComponents() {
         this.add(lineWidthMenu);
         this.add(lineStyleMenu);
+        this.add(new JSeparator());
+        this.add(lineColorItem);
+        this.add(fillColorItem);
         this.add(new JSeparator());
         this.add(fontStyleMenu);
         this.add(fontSizeMenu);
@@ -94,6 +93,8 @@ public class GGraphicMenu extends JMenu implements GComponent {
         lineStyleMenu.setFont(menuFont);
         fontStyleMenu.setFont(menuFont);
         fontSizeMenu.setFont(menuFont);
+        lineColorItem.setFont(menuFont);
+        fillColorItem.setFont(menuFont);
 
         for (int i = 0; i < lineWidthMenu.getItemCount(); i++)
             setMenuItemFont(lineWidthMenu.getItem(i), menuFont);
@@ -111,18 +112,19 @@ public class GGraphicMenu extends JMenu implements GComponent {
 
     @Override
     public void addEventHandler() {
-        // Line Width handlers
         for (int i = 0; i < lineWidthMenu.getItemCount(); i++) {
             JMenuItem item = lineWidthMenu.getItem(i);
             final int index = i;
             item.addActionListener(e -> {
-                float[] widths = {1.0f, 2.0f, 4.0f};
+                float[] widths = {
+                        GConstants.EGraphicsDefaults.eThinLineWidth.getFloatValue(),
+                        GConstants.EGraphicsDefaults.eNormalLineWidth.getFloatValue(),
+                        GConstants.EGraphicsDefaults.eThickLineWidth.getFloatValue()
+                };
                 float selectedWidth = widths[index];
 
-                // 전역 설정 변경 (새로 그릴 도형용)
                 GGraphicsProperties.getInstance().setLineWidth(selectedWidth);
 
-                // 선택된 도형들에 적용
                 if (drawingPanel != null) {
                     drawingPanel.applyLineWidthToSelected(selectedWidth);
                 }
@@ -131,7 +133,6 @@ public class GGraphicMenu extends JMenu implements GComponent {
             });
         }
 
-        // Line Style handlers
         for (int i = 0; i < lineStyleMenu.getItemCount(); i++) {
             JMenuItem item = lineStyleMenu.getItem(i);
             final int index = i;
@@ -143,10 +144,8 @@ public class GGraphicMenu extends JMenu implements GComponent {
                 };
                 GGraphicsProperties.LineStyle selectedStyle = styles[index];
 
-                // 전역 설정 변경 (새로 그릴 도형용)
                 GGraphicsProperties.getInstance().setLineStyle(selectedStyle);
 
-                // 선택된 도형들에 적용
                 if (drawingPanel != null) {
                     drawingPanel.applyLineStyleToSelected(selectedStyle);
                 }
@@ -155,16 +154,66 @@ public class GGraphicMenu extends JMenu implements GComponent {
             });
         }
 
-        // Font Style handlers (placeholder)
+        lineColorItem.addActionListener(e -> {
+            Color currentColor = GGraphicsProperties.getInstance().getLineColor();
+            Color selectedColor = JColorChooser.showDialog(this, GConstants.EMenuTexts.eSelectLineColor.getValue(), currentColor);
+            if (selectedColor != null) {
+                GGraphicsProperties.getInstance().setLineColor(selectedColor);
+
+                if (drawingPanel != null) {
+                    drawingPanel.applyLineColorToSelected(selectedColor);
+                }
+
+                System.out.println("Line color set to: " + selectedColor);
+            }
+        });
+
+        fillColorItem.addActionListener(e -> {
+            Color currentColor = GGraphicsProperties.getInstance().getFillColor();
+            Color selectedColor = JColorChooser.showDialog(this, GConstants.EMenuTexts.eSelectFillColor.getValue(), currentColor);
+            if (selectedColor != null) {
+                GGraphicsProperties.getInstance().setFillColor(selectedColor);
+
+                if (drawingPanel != null) {
+                    drawingPanel.applyFillColorToSelected(selectedColor);
+                }
+
+                System.out.println("Fill color set to: " + selectedColor);
+            }
+        });
+
         for (int i = 0; i < fontStyleMenu.getItemCount(); i++) {
-            fontStyleMenu.getItem(i).addActionListener(e ->
-                    System.out.println("Font style: " + e.getActionCommand()));
+            JMenuItem item = fontStyleMenu.getItem(i);
+            final int index = i;
+            item.addActionListener(e -> {
+                int[] styles = {Font.PLAIN, Font.BOLD, Font.ITALIC, Font.BOLD | Font.ITALIC};
+                int selectedStyle = styles[index];
+
+                GGraphicsProperties.getInstance().setFontStyle(selectedStyle);
+
+                if (drawingPanel != null) {
+                    drawingPanel.applyFontStyleToSelected(selectedStyle);
+                }
+
+                System.out.println("Font style set to: " + selectedStyle);
+            });
         }
 
-        // Font Size handlers (placeholder)
         for (int i = 0; i < fontSizeMenu.getItemCount(); i++) {
-            fontSizeMenu.getItem(i).addActionListener(e ->
-                    System.out.println("Font size: " + e.getActionCommand()));
+            JMenuItem item = fontSizeMenu.getItem(i);
+            final int index = i;
+            item.addActionListener(e -> {
+                int[] sizes = GConstants.EFontSizes.getAllValues();
+                int selectedSize = sizes[index];
+
+                GGraphicsProperties.getInstance().setFontSize(selectedSize);
+
+                if (drawingPanel != null) {
+                    drawingPanel.applyFontSizeToSelected(selectedSize);
+                }
+
+                System.out.println("Font size set to: " + selectedSize + "pt");
+            });
         }
     }
 
