@@ -31,7 +31,8 @@ public class GEditMenu extends JMenu implements GComponent {
         for (GConstants.EEditMenuItem eEditMenuItem : GConstants.EEditMenuItem.values()) {
             if (!firstItem && (eEditMenuItem == GConstants.EEditMenuItem.eCut ||
                     eEditMenuItem == GConstants.EEditMenuItem.eDuplicate ||
-                    eEditMenuItem == GConstants.EEditMenuItem.eGroup)) {
+                    eEditMenuItem == GConstants.EEditMenuItem.eGroup ||
+                    eEditMenuItem == GConstants.EEditMenuItem.eBringToFront)) {
                 this.add(new JSeparator());
             }
 
@@ -78,6 +79,7 @@ public class GEditMenu extends JMenu implements GComponent {
                     updateUndoRedoState();
                     updateClipboardState();
                     updateGroupState();
+                    updateLayerState();
                     updateSelectionState();
                 });
             }
@@ -122,6 +124,18 @@ public class GEditMenu extends JMenu implements GComponent {
                     break;
                 case "unGroup":
                     unGroup();
+                    break;
+                case "bringToFront":
+                    bringToFront();
+                    break;
+                case "sendToBack":
+                    sendToBack();
+                    break;
+                case "bringForward":
+                    bringForward();
+                    break;
+                case "sendBackward":
+                    sendBackward();
                     break;
             }
         } catch (IllegalArgumentException e) {
@@ -194,6 +208,30 @@ public class GEditMenu extends JMenu implements GComponent {
         }
     }
 
+    private void bringToFront() {
+        if (drawingPanel != null) {
+            drawingPanel.bringToFront();
+        }
+    }
+
+    private void sendToBack() {
+        if (drawingPanel != null) {
+            drawingPanel.sendToBack();
+        }
+    }
+
+    private void bringForward() {
+        if (drawingPanel != null) {
+            drawingPanel.bringForward();
+        }
+    }
+
+    private void sendBackward() {
+        if (drawingPanel != null) {
+            drawingPanel.sendBackward();
+        }
+    }
+
     @Override
     public void initialize() {
     }
@@ -255,6 +293,31 @@ public class GEditMenu extends JMenu implements GComponent {
         }
     }
 
+    public void updateLayerState() {
+        if (drawingPanel == null) return;
+
+        boolean canBringToFront = drawingPanel.canBringToFront();
+        boolean canSendToBack = drawingPanel.canSendToBack();
+        boolean canBringForward = drawingPanel.canBringForward();
+        boolean canSendBackward = drawingPanel.canSendBackward();
+
+        for (int i = 0; i < this.getItemCount(); i++) {
+            JMenuItem item = this.getItem(i);
+            if (item != null) {
+                String command = item.getActionCommand();
+                if ("eBringToFront".equals(command)) {
+                    item.setEnabled(canBringToFront);
+                } else if ("eSendToBack".equals(command)) {
+                    item.setEnabled(canSendToBack);
+                } else if ("eBringForward".equals(command)) {
+                    item.setEnabled(canBringForward);
+                } else if ("eSendBackward".equals(command)) {
+                    item.setEnabled(canSendBackward);
+                }
+            }
+        }
+    }
+
     public void updateSelectionState() {
         if (drawingPanel == null) return;
 
@@ -279,6 +342,7 @@ public class GEditMenu extends JMenu implements GComponent {
         updateUndoRedoState();
         updateClipboardState();
         updateGroupState();
+        updateLayerState();
         updateSelectionState();
     }
 }

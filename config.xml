@@ -24,6 +24,10 @@
         <eDeselectAll label="선택 해제" toolTipText="모든 선택을 해제합니다" />
         <eGroup label="그룹" toolTipText="선택된 객체들을 그룹화합니다" />
         <eUnGroup label="그룹해제" toolTipText="그룹을 해제합니다" />
+        <eBringToFront label="맨 앞으로" toolTipText="선택된 객체를 맨 앞으로 가져옵니다" />
+        <eSendToBack label="맨 뒤로" toolTipText="선택된 객체를 맨 뒤로 보냅니다" />
+        <eBringForward label="앞으로" toolTipText="선택된 객체를 한 단계 앞으로 가져옵니다" />
+        <eSendBackward label="뒤로" toolTipText="선택된 객체를 한 단계 뒤로 보냅니다" />
     </EEditMenuItem>
 
     <EGraphicsMenuItem>
@@ -137,4 +141,6 @@
         <eCannotFindIcon value="아이콘 파일을 찾을 수 없습니다: /rsc/icon.jpg" />
         <eIconLoadFailed value="아이콘 로드 실패: " />
     </EDialogTexts>
+
+
 </GConstants>

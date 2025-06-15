@@ -161,12 +161,7 @@ public class GDrawingPanel extends JPanel implements Printable {
 		return undoRedoManager.canRedo();
 	}
 
-	public void copy() {
-		List<GShape> selectedShapes = getSelectedShapes();
-		if (!selectedShapes.isEmpty()) {
-			GClipboard.getInstance().copy(selectedShapes);
-		}
-	}
+
 
 	public void cut() {
 		List<GShape> selectedShapes = getSelectedShapes();
@@ -239,12 +234,20 @@ public class GDrawingPanel extends JPanel implements Printable {
 
 	public void selectAll() {
 		stopTextEditing();
-		clearSelection();
 		if (!shapes.isEmpty()) {
 			for (GShape shape : shapes) {
-				shape.setSelected(true);
+				if (shape != null && shape.getShape() != null) {
+					shape.setSelected(true);
+				}
 			}
 			this.repaint();
+		}
+	}
+
+	public void copy() {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (!selectedShapes.isEmpty()) {
+			GClipboard.getInstance().copy(selectedShapes);
 		}
 	}
 
@@ -322,6 +325,110 @@ public class GDrawingPanel extends JPanel implements Printable {
 		List<GShape> selectedShapes = getSelectedShapes();
 		for (GShape shape : selectedShapes) {
 			if (shape instanceof GGroup) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void bringToFront() {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (!selectedShapes.isEmpty()) {
+			for (GShape shape : selectedShapes) {
+				shapes.remove(shape);
+				shapes.add(shape);
+			}
+			saveCurrentState();
+			this.bUpdated = true;
+			this.repaint();
+		}
+	}
+
+	public void sendToBack() {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (!selectedShapes.isEmpty()) {
+			for (int i = selectedShapes.size() - 1; i >= 0; i--) {
+				GShape shape = selectedShapes.get(i);
+				shapes.remove(shape);
+				shapes.insertElementAt(shape, 0);
+			}
+			saveCurrentState();
+			this.bUpdated = true;
+			this.repaint();
+		}
+	}
+
+	public void bringForward() {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (!selectedShapes.isEmpty()) {
+			for (int i = selectedShapes.size() - 1; i >= 0; i--) {
+				GShape shape = selectedShapes.get(i);
+				int currentIndex = shapes.indexOf(shape);
+				if (currentIndex < shapes.size() - 1) {
+					shapes.remove(shape);
+					shapes.insertElementAt(shape, currentIndex + 1);
+				}
+			}
+			saveCurrentState();
+			this.bUpdated = true;
+			this.repaint();
+		}
+	}
+
+	public void sendBackward() {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (!selectedShapes.isEmpty()) {
+			for (GShape shape : selectedShapes) {
+				int currentIndex = shapes.indexOf(shape);
+				if (currentIndex > 0) {
+					shapes.remove(shape);
+					shapes.insertElementAt(shape, currentIndex - 1);
+				}
+			}
+			saveCurrentState();
+			this.bUpdated = true;
+			this.repaint();
+		}
+	}
+
+	public boolean canBringToFront() {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (selectedShapes.isEmpty()) return false;
+		for (GShape shape : selectedShapes) {
+			if (shapes.indexOf(shape) != shapes.size() - 1) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean canSendToBack() {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (selectedShapes.isEmpty()) return false;
+		for (GShape shape : selectedShapes) {
+			if (shapes.indexOf(shape) != 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean canBringForward() {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (selectedShapes.isEmpty()) return false;
+		for (GShape shape : selectedShapes) {
+			if (shapes.indexOf(shape) < shapes.size() - 1) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean canSendBackward() {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (selectedShapes.isEmpty()) return false;
+		for (GShape shape : selectedShapes) {
+			if (shapes.indexOf(shape) > 0) {
 				return true;
 			}
 		}
@@ -800,12 +907,13 @@ public class GDrawingPanel extends JPanel implements Printable {
 		if (this.eShapeTool == GConstants.EShapeTool.eSelect) {
 			if (multiSelection) {
 				this.selectShapesInArea();
-				if (this.currentShape != null) {
-					this.shapes.remove(this.currentShape);
-				}
 				multiSelection = false;
 			} else {
 				saveCurrentState();
+			}
+			if (this.currentShape != null) {
+				this.shapes.remove(this.currentShape);
+				this.currentShape = null;
 			}
 		} else if (this.eShapeTool == EShapeTool.eTextBox) {
 			this.selectShape();
@@ -815,6 +923,7 @@ public class GDrawingPanel extends JPanel implements Printable {
 			saveCurrentState();
 		} else {
 			this.selectShape();
+			this.requestFocus();
 			saveCurrentState();
 		}
 
@@ -954,6 +1063,11 @@ public class GDrawingPanel extends JPanel implements Printable {
 		public void keyPressed(KeyEvent e) {
 			if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
 				ctrlPressed = true;
+			}
+
+			if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_A) {
+				selectAll();
+				return;
 			}
 
 			if (e.getKeyCode() == KeyEvent.VK_R && hasMultipleSelection()) {

@@ -248,7 +248,11 @@ public final class GConstants {
         eSelectAll(null, "selectAll", KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK)),
         eDeselectAll(null, "deselectAll", KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)),
         eGroup(null, "group", KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_MASK)),
-        eUnGroup(null, "unGroup", KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_MASK));
+        eUnGroup(null, "unGroup", KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_MASK)),
+        eBringToFront(null, "bringToFront", KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)),
+        eSendToBack(null, "sendToBack", KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)),
+        eBringForward(null, "bringForward", KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, InputEvent.CTRL_MASK)),
+        eSendBackward(null, "sendBackward", KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, InputEvent.CTRL_MASK));
 
         private String name;
         private String methodName;

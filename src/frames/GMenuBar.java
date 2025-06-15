@@ -38,6 +38,7 @@ public class GMenuBar extends JMenuBar implements GComponent {
 				editMenu.updateUndoRedoState();
 				editMenu.updateClipboardState();
 				editMenu.updateGroupState();
+				editMenu.updateLayerState();
 			}
 		});
 		updateTimer.start();
