@@ -92,7 +92,6 @@ public class GDrawingPanel extends JPanel implements Printable {
 		saveCurrentState();
 		this.repaint();
 		this.removeAll();
-		shapes.removeLast();
 	}
 
 	public void setEShapeTool(EShapeTool eShapeTool) {
