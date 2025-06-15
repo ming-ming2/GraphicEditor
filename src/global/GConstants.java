@@ -244,6 +244,9 @@ public final class GConstants {
         eCopy(null, "copy", KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK)),
         ePaste(null, "paste", KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK)),
         eDelete(null, "delete", KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0)),
+        eDuplicate(null, "duplicate", KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_MASK)),
+        eSelectAll(null, "selectAll", KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK)),
+        eDeselectAll(null, "deselectAll", KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)),
         eGroup(null, "group", KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_MASK)),
         eUnGroup(null, "unGroup", KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_MASK));
 
@@ -275,7 +278,6 @@ public final class GConstants {
                         }
                     }
                 } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
                 }
             }
         }
@@ -601,7 +603,8 @@ public final class GConstants {
 
     public enum EClipboardConstants {
         ePasteOffset(20),
-        eMaxUndoSize(50);
+        eMaxUndoSize(50),
+        eDuplicateOffset(25);
 
         private int value;
 

@@ -19,6 +19,9 @@
         <eCopy label="복사" toolTipText="선택된 객체를 복사합니다" />
         <ePaste label="붙이기" toolTipText="복사된 객체를 붙여넣습니다" />
         <eDelete label="지우기" toolTipText="선택된 객체를 삭제합니다" />
+        <eDuplicate label="복제" toolTipText="선택된 객체를 복제합니다" />
+        <eSelectAll label="전체 선택" toolTipText="모든 객체를 선택합니다" />
+        <eDeselectAll label="선택 해제" toolTipText="모든 선택을 해제합니다" />
         <eGroup label="그룹" toolTipText="선택된 객체들을 그룹화합니다" />
         <eUnGroup label="그룹해제" toolTipText="그룹을 해제합니다" />
     </EEditMenuItem>
@@ -92,6 +95,7 @@
     <EClipboardConstants>
         <ePasteOffset value="20" />
         <eMaxUndoSize value="50" />
+        <eDuplicateOffset value="25" />
     </EClipboardConstants>
 
     <EMenuTexts>

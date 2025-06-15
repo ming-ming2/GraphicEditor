@@ -14,7 +14,7 @@ public class GEditMenu extends JMenu implements GComponent {
     private GDrawingPanel drawingPanel;
 
     public GEditMenu() {
-        super("Edit");
+        super(GConstants.EMenuTexts.eEditMenu.getValue());
         this.createComponents();
         this.setAttributes();
         this.arrangeComponents();
@@ -30,6 +30,7 @@ public class GEditMenu extends JMenu implements GComponent {
         boolean firstItem = true;
         for (GConstants.EEditMenuItem eEditMenuItem : GConstants.EEditMenuItem.values()) {
             if (!firstItem && (eEditMenuItem == GConstants.EEditMenuItem.eCut ||
+                    eEditMenuItem == GConstants.EEditMenuItem.eDuplicate ||
                     eEditMenuItem == GConstants.EEditMenuItem.eGroup)) {
                 this.add(new JSeparator());
             }
@@ -63,6 +64,7 @@ public class GEditMenu extends JMenu implements GComponent {
 
         updateUndoRedoState();
         updateClipboardState();
+        updateSelectionState();
     }
 
     @Override
@@ -76,6 +78,7 @@ public class GEditMenu extends JMenu implements GComponent {
                     updateUndoRedoState();
                     updateClipboardState();
                     updateGroupState();
+                    updateSelectionState();
                 });
             }
         }
@@ -105,6 +108,15 @@ public class GEditMenu extends JMenu implements GComponent {
                 case "delete":
                     delete();
                     break;
+                case "duplicate":
+                    duplicate();
+                    break;
+                case "selectAll":
+                    selectAll();
+                    break;
+                case "deselectAll":
+                    deselectAll();
+                    break;
                 case "group":
                     group();
                     break;
@@ -113,7 +125,6 @@ public class GEditMenu extends JMenu implements GComponent {
                     break;
             }
         } catch (IllegalArgumentException e) {
-            System.err.println("Unknown command: " + command);
         }
     }
 
@@ -150,6 +161,24 @@ public class GEditMenu extends JMenu implements GComponent {
     private void delete() {
         if (drawingPanel != null) {
             drawingPanel.delete();
+        }
+    }
+
+    private void duplicate() {
+        if (drawingPanel != null) {
+            drawingPanel.duplicate();
+        }
+    }
+
+    private void selectAll() {
+        if (drawingPanel != null) {
+            drawingPanel.selectAll();
+        }
+    }
+
+    private void deselectAll() {
+        if (drawingPanel != null) {
+            drawingPanel.deselectAll();
         }
     }
 
@@ -217,10 +246,29 @@ public class GEditMenu extends JMenu implements GComponent {
             JMenuItem item = this.getItem(i);
             if (item != null) {
                 String command = item.getActionCommand();
-                if ("eCut".equals(command) || "eCopy".equals(command) || "eDelete".equals(command)) {
+                if ("eCut".equals(command) || "eCopy".equals(command) || "eDelete".equals(command) || "eDuplicate".equals(command)) {
                     item.setEnabled(hasSelection);
                 } else if ("ePaste".equals(command)) {
                     item.setEnabled(hasClipboardContent);
+                }
+            }
+        }
+    }
+
+    public void updateSelectionState() {
+        if (drawingPanel == null) return;
+
+        boolean hasShapes = drawingPanel.hasAnyShapes();
+        boolean hasSelection = drawingPanel.hasSelection();
+
+        for (int i = 0; i < this.getItemCount(); i++) {
+            JMenuItem item = this.getItem(i);
+            if (item != null) {
+                String command = item.getActionCommand();
+                if ("eSelectAll".equals(command)) {
+                    item.setEnabled(hasShapes);
+                } else if ("eDeselectAll".equals(command)) {
+                    item.setEnabled(hasSelection);
                 }
             }
         }
@@ -231,5 +279,6 @@ public class GEditMenu extends JMenu implements GComponent {
         updateUndoRedoState();
         updateClipboardState();
         updateGroupState();
+        updateSelectionState();
     }
 }

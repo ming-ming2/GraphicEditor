@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.io.*;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -30,6 +31,8 @@ import transformers.*;
 
 public class GDrawingPanel extends JPanel implements Printable {
 	private static final long serialVersionUID = 1L;
+	private static final int BASE_CANVAS_WIDTH = GConstants.ECanvasConstants.eBaseWidth.getIntValue();
+	private static final int BASE_CANVAS_HEIGHT = GConstants.ECanvasConstants.eBaseHeight.getIntValue();
 
 	public enum EDrawingState {
 		eIdle,
@@ -54,8 +57,6 @@ public class GDrawingPanel extends JPanel implements Printable {
 	private double zoomLevel = 1.0;
 	private AffineTransform viewTransform;
 	private JScrollPane parentScrollPane;
-	private static final int BASE_CANVAS_WIDTH = GConstants.ECanvasConstants.eBaseWidth.getIntValue();
-	private static final int BASE_CANVAS_HEIGHT = GConstants.ECanvasConstants.eBaseHeight.getIntValue();
 
 	public GDrawingPanel() {
 		MouseHandler mouseHandler = new MouseHandler();
@@ -65,6 +66,9 @@ public class GDrawingPanel extends JPanel implements Printable {
 		KeyHandler keyHandler = new KeyHandler();
 		this.addKeyListener(keyHandler);
 		this.setFocusable(true);
+
+		MouseWheelHandler wheelHandler = new MouseWheelHandler();
+		this.addMouseWheelListener(wheelHandler);
 
 		this.currentShape = null;
 		this.selectedShape = null;
@@ -77,9 +81,6 @@ public class GDrawingPanel extends JPanel implements Printable {
 		this.undoRedoManager = new GUndoRedoManager();
 		this.originalTransforms = new HashMap<>();
 		this.viewTransform = new AffineTransform();
-
-		MouseWheelHandler wheelHandler = new MouseWheelHandler();
-		this.addMouseWheelListener(wheelHandler);
 	}
 
 	public void initialize() {
@@ -104,6 +105,26 @@ public class GDrawingPanel extends JPanel implements Printable {
 
 	public void setBUpdated(boolean bUpdated) {
 		this.bUpdated = bUpdated;
+	}
+
+	public Vector<GShape> getShapes() {
+		return this.shapes;
+	}
+
+	public void setShapes(Vector<GShape> shapes) {
+		this.shapes = shapes;
+		this.editingTextBox = null;
+		this.undoRedoManager.clear();
+		saveCurrentState();
+		this.repaint();
+	}
+
+	public void setParentScrollPane(JScrollPane scrollPane) {
+		this.parentScrollPane = scrollPane;
+	}
+
+	public double getZoomLevel() {
+		return zoomLevel;
 	}
 
 	public void saveCurrentState() {
@@ -188,12 +209,61 @@ public class GDrawingPanel extends JPanel implements Printable {
 		}
 	}
 
+	public void duplicate() {
+		List<GShape> selectedShapes = getSelectedShapes();
+		if (!selectedShapes.isEmpty()) {
+			List<GShape> duplicatedShapes = new ArrayList<>();
+
+			try {
+				for (GShape shape : selectedShapes) {
+					GShape duplicatedShape = deepCloneShape(shape);
+					int offset = GConstants.EClipboardConstants.eDuplicateOffset.getValue();
+					duplicatedShape.getAffineTransform().translate(offset, offset);
+					duplicatedShapes.add(duplicatedShape);
+				}
+
+				clearSelection();
+				for (GShape shape : duplicatedShapes) {
+					shapes.add(shape);
+					shape.setSelected(true);
+				}
+
+				saveCurrentState();
+				this.bUpdated = true;
+				this.repaint();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void selectAll() {
+		stopTextEditing();
+		clearSelection();
+		if (!shapes.isEmpty()) {
+			for (GShape shape : shapes) {
+				shape.setSelected(true);
+			}
+			this.repaint();
+		}
+	}
+
+	public void deselectAll() {
+		stopTextEditing();
+		clearSelection();
+		this.repaint();
+	}
+
 	public boolean hasSelection() {
 		return !getSelectedShapes().isEmpty();
 	}
 
 	public boolean hasClipboardContent() {
 		return GClipboard.getInstance().hasContent();
+	}
+
+	public boolean hasAnyShapes() {
+		return !shapes.isEmpty();
 	}
 
 	public void group() {
@@ -340,66 +410,6 @@ public class GDrawingPanel extends JPanel implements Printable {
 		}
 	}
 
-	public void printPanel() {
-		PrinterJob printerJob = PrinterJob.getPrinterJob();
-		printerJob.setPrintable(this);
-
-		if (printerJob.printDialog()) {
-			try {
-				printerJob.print();
-			} catch (PrinterException e) {
-				javax.swing.JOptionPane.showMessageDialog(this,
-						GConstants.EDialogTexts.ePrintError.getValue() + ": " + e.getMessage(),
-						GConstants.EDialogTexts.ePrintError.getValue(),
-						javax.swing.JOptionPane.ERROR_MESSAGE);
-			}
-		}
-	}
-
-	@Override
-	public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-		if (pageIndex > 0) {
-			return NO_SUCH_PAGE;
-		}
-
-		Graphics2D g2d = (Graphics2D) graphics;
-
-		g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
-
-		double pageWidth = pageFormat.getImageableWidth();
-		double pageHeight = pageFormat.getImageableHeight();
-		double canvasWidth = BASE_CANVAS_WIDTH;
-		double canvasHeight = BASE_CANVAS_HEIGHT;
-
-		double scaleX = pageWidth / canvasWidth;
-		double scaleY = pageHeight / canvasHeight;
-		double scale = Math.min(scaleX, scaleY);
-
-		g2d.scale(scale, scale);
-
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-
-		g2d.setColor(Color.WHITE);
-		g2d.fillRect(0, 0, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT);
-
-		for (GShape shape : this.shapes) {
-			if (shape.isSelected()) {
-				shape.setSelected(false);
-				shape.draw(g2d);
-				shape.setSelected(true);
-			} else {
-				shape.draw(g2d);
-			}
-		}
-
-		return PAGE_EXISTS;
-	}
-
-	public void setParentScrollPane(JScrollPane scrollPane) {
-		this.parentScrollPane = scrollPane;
-	}
-
 	public void zoomIn() {
 		zoomLevel *= GConstants.ECanvasConstants.eZoomInFactor.getValue();
 		updateViewTransform();
@@ -457,20 +467,60 @@ public class GDrawingPanel extends JPanel implements Printable {
 		this.repaint();
 	}
 
-	private void updateViewTransform() {
-		viewTransform.setToScale(zoomLevel, zoomLevel);
+	public void printPanel() {
+		PrinterJob printerJob = PrinterJob.getPrinterJob();
+		printerJob.setPrintable(this);
+
+		if (printerJob.printDialog()) {
+			try {
+				printerJob.print();
+			} catch (PrinterException e) {
+				javax.swing.JOptionPane.showMessageDialog(this,
+						GConstants.EDialogTexts.ePrintError.getValue() + ": " + e.getMessage(),
+						GConstants.EDialogTexts.ePrintError.getValue(),
+						javax.swing.JOptionPane.ERROR_MESSAGE);
+			}
+		}
 	}
 
-	private void updatePreferredSize() {
-		int newWidth = (int)(BASE_CANVAS_WIDTH * zoomLevel);
-		int newHeight = (int)(BASE_CANVAS_HEIGHT * zoomLevel);
+	@Override
+	public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+		if (pageIndex > 0) {
+			return NO_SUCH_PAGE;
+		}
 
-		this.setPreferredSize(new Dimension(newWidth, newHeight));
-		this.revalidate();
-	}
+		Graphics2D g2d = (Graphics2D) graphics;
 
-	public double getZoomLevel() {
-		return zoomLevel;
+		g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+
+		double pageWidth = pageFormat.getImageableWidth();
+		double pageHeight = pageFormat.getImageableHeight();
+		double canvasWidth = BASE_CANVAS_WIDTH;
+		double canvasHeight = BASE_CANVAS_HEIGHT;
+
+		double scaleX = pageWidth / canvasWidth;
+		double scaleY = pageHeight / canvasHeight;
+		double scale = Math.min(scaleX, scaleY);
+
+		g2d.scale(scale, scale);
+
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
+		g2d.setColor(Color.WHITE);
+		g2d.fillRect(0, 0, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT);
+
+		for (GShape shape : this.shapes) {
+			if (shape.isSelected()) {
+				shape.setSelected(false);
+				shape.draw(g2d);
+				shape.setSelected(true);
+			} else {
+				shape.draw(g2d);
+			}
+		}
+
+		return PAGE_EXISTS;
 	}
 
 	protected void paintComponent(Graphics graphics) {
@@ -489,6 +539,32 @@ public class GDrawingPanel extends JPanel implements Printable {
 		if (editingTextBox != null && editingTextBox.isEditing()) {
 			repaint();
 		}
+	}
+
+	private void updateViewTransform() {
+		viewTransform.setToScale(zoomLevel, zoomLevel);
+	}
+
+	private void updatePreferredSize() {
+		int newWidth = (int)(BASE_CANVAS_WIDTH * zoomLevel);
+		int newHeight = (int)(BASE_CANVAS_HEIGHT * zoomLevel);
+
+		this.setPreferredSize(new Dimension(newWidth, newHeight));
+		this.revalidate();
+	}
+
+	private GShape deepCloneShape(GShape shape) throws IOException, ClassNotFoundException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(baos);
+		oos.writeObject(shape);
+		oos.close();
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+		ObjectInputStream ois = new ObjectInputStream(bais);
+		GShape clonedShape = (GShape) ois.readObject();
+		ois.close();
+
+		return clonedShape;
 	}
 
 	private GShape onShape(int x, int y) {
@@ -750,18 +826,6 @@ public class GDrawingPanel extends JPanel implements Printable {
 	private void selectShape() {
 		clearSelection();
 		this.currentShape.setSelected(true);
-	}
-
-	public Vector<GShape> getShapes() {
-		return this.shapes;
-	}
-
-	public void setShapes(Vector<GShape> shapes) {
-		this.shapes = shapes;
-		this.editingTextBox = null;
-		this.undoRedoManager.clear();
-		saveCurrentState();
-		this.repaint();
 	}
 
 	private void selectShapesInArea() {
